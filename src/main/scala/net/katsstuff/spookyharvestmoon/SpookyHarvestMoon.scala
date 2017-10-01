@@ -1,5 +1,6 @@
 package net.katsstuff.spookyharvestmoon
 
+import net.katsstuff.spookyharvestmoon.helper.LogHelper
 import net.katsstuff.spookyharvestmoon.lib.LibMod
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.{FMLInitializationEvent, FMLPostInitializationEvent, FMLPreInitializationEvent}
@@ -8,7 +9,9 @@ import net.minecraftforge.fml.common.event.{FMLInitializationEvent, FMLPostIniti
 object SpookyHarvestMoon {
 
   @Mod.EventHandler
-  def preinit(event: FMLPreInitializationEvent): Unit = {}
+  def preinit(event: FMLPreInitializationEvent): Unit = {
+    LogHelper.assignLog(event.getModLog)
+  }
 
   @Mod.EventHandler
   def init(event: FMLInitializationEvent): Unit = {}
