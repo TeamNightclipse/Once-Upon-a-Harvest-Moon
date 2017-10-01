@@ -3,9 +3,9 @@ package net.katsstuff.spookyharvestmoon.network
 import io.netty.buffer.ByteBuf
 import net.katsstuff.spookyharvestmoon.client.particle.{GlowTexture, ParticleUtil}
 import net.katsstuff.spookyharvestmoon.data.Vector3
-import net.katsstuff.spookyharvestmoon.network.scalachannel.{MessageConverter, MessageHandler, ServerMessageHandler}
+import net.katsstuff.spookyharvestmoon.network.scalachannel.{ClientMessageHandler, MessageConverter, MessageHandler, ServerMessageHandler}
 import net.minecraft.client.Minecraft
-import net.minecraft.network.NetHandlerPlayServer
+import net.minecraft.client.network.NetHandlerPlayClient
 
 case class ParticlePacket(
     pos: Vector3,
@@ -32,8 +32,8 @@ object ParticlePacket {
     }
 
     override def fromBytes(buf: ByteBuf): ParticlePacket = ParticlePacket(
-      MessageConverter.readBytes(buf),
-      MessageConverter.readBytes(buf),
+      MessageConverter.readBytes[Vector3](buf),
+      MessageConverter.readBytes[Vector3](buf),
       buf.readFloat(),
       buf.readFloat(),
       buf.readFloat(),
@@ -45,15 +45,15 @@ object ParticlePacket {
     )
   }
 
-  implicit val handler: MessageHandler[ParticlePacket, Unit] = new ServerMessageHandler[ParticlePacket, Unit] {
-    override def handle(netHandler: NetHandlerPlayServer, a: ParticlePacket): Option[Unit] = {
+  implicit val handler: ClientMessageHandler[ParticlePacket, Unit] = new ClientMessageHandler[ParticlePacket, Unit] {
+    override def handle(netHandler: NetHandlerPlayClient, a: ParticlePacket): Option[Unit] = {
       scheduler.addScheduledTask(ParticlePacketRunnable(netHandler, a))
       None
     }
   }
 }
 
-case class ParticlePacketRunnable(server: NetHandlerPlayServer, packet: ParticlePacket) extends Runnable {
+case class ParticlePacketRunnable(server: NetHandlerPlayClient, packet: ParticlePacket) extends Runnable {
   override def run(): Unit =
     ParticleUtil.spawnParticleGlow(
       Minecraft.getMinecraft.player.world,

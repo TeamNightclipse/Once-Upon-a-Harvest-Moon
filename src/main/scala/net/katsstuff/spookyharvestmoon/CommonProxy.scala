@@ -1,6 +1,6 @@
 package net.katsstuff.spookyharvestmoon
 
-import net.katsstuff.spookyharvestmoon.client.particle.IGlowParticle
+import net.katsstuff.spookyharvestmoon.client.particle.{GlowTexture, IGlowParticle, ParticleGlow}
 import net.katsstuff.spookyharvestmoon.lib.{LibEntityName, LibMod}
 import net.minecraft.entity.{Entity, EntityLiving, EnumCreatureType}
 import net.minecraft.util.ResourceLocation
@@ -10,19 +10,20 @@ import net.minecraftforge.fml.common.registry.EntityRegistry
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
+import net.katsstuff.spookyharvestmoon.block.BlockLantern
+import net.katsstuff.spookyharvestmoon.client.particle.ParticleUtil.{counter, random}
+import net.katsstuff.spookyharvestmoon.data.Vector3
 import net.katsstuff.spookyharvestmoon.entity._
 import net.katsstuff.spookyharvestmoon.helper.IdState
-import net.katsstuff.spookyharvestmoon.item.ItemLantern
-import net.minecraft.item.Item
+import net.minecraft.block.Block
+import net.minecraft.client.Minecraft
+import net.minecraft.world.World
 import net.minecraftforge.event.RegistryEvent
 
 object CommonProxy {
 
-  def registerItems(event: RegistryEvent.Register[Item]): Unit = {
-    event.getRegistry.registerAll(
-      (new ItemLantern).setRegistryName(LibItemName.Lantern)
-    )
-  }
+  def registerItems(event: RegistryEvent.Register[Block]): Unit =
+    event.getRegistry.registerAll((new BlockLantern).setRegistryName(LibBlockName.Lantern))
 }
 case class Egg(primary: Int, secondary: Int)
 class CommonProxy {
@@ -37,7 +38,7 @@ class CommonProxy {
         egg: Egg,
         trackingRange: Int = 64,
         updateFrequency: Int = 1,
-        sendVelocityUpdates: Boolean = true,
+        sendVelocityUpdates: Boolean = true
     )(implicit classTag: ClassTag[A]): IdState[Unit] =
       IdState(
         id =>
@@ -92,8 +93,19 @@ class CommonProxy {
     registerSpawn[EntityLanternMan](spawns.lanternMan, EnumCreatureType.MONSTER, BiomeType.SWAMP)
     registerSpawn[EntityMermaid](spawns.mermaid, EnumCreatureType.MONSTER, BiomeType.OCEAN)
     registerSpawn[EntityWillOTheWisp](spawns.willOTheWisp, EnumCreatureType.MONSTER, BiomeType.SWAMP)
-
   }
+
+  def spawnParticleGlow(
+      world: World,
+      pos: Vector3,
+      motion: Vector3,
+      r: Float,
+      g: Float,
+      b: Float,
+      scale: Float,
+      lifetime: Int,
+      texture: GlowTexture
+  ): Unit = {}
 
   def addParticle(particle: IGlowParticle): Unit = {}
 

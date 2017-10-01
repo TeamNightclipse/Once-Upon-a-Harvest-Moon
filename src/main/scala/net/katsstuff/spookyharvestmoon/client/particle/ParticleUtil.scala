@@ -4,7 +4,7 @@ import java.util.Random
 
 import net.katsstuff.spookyharvestmoon.SpookyHarvestMoon
 import net.katsstuff.spookyharvestmoon.data.Vector3
-import net.katsstuff.spookyharvestmoon.network.SpookyPacketHandler
+import net.katsstuff.spookyharvestmoon.network.{ParticlePacket, SpookyPacketHandler}
 import net.katsstuff.spookyharvestmoon.network.scalachannel.TargetPoint
 import net.minecraft.client.Minecraft
 import net.minecraft.world.World

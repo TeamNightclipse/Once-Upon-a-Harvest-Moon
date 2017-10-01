@@ -2,10 +2,8 @@ package net.katsstuff.spookyharvestmoon.network.scalachannel
 
 import scala.reflect.ClassTag
 
-import org.apache.logging.log4j.Level
-
 import io.netty.channel.{ChannelFutureListener, ChannelHandlerContext, SimpleChannelInboundHandler}
-import net.minecraftforge.fml.common.FMLLog
+import net.katsstuff.spookyharvestmoon.helper.LogHelper
 import net.minecraftforge.fml.common.network.{FMLOutboundHandler, NetworkRegistry}
 import net.minecraftforge.fml.relauncher.Side
 
@@ -25,7 +23,7 @@ class SimpleChannelHandlerScalaWrapper[A, Reply](handler: MessageHandler[A, Repl
 
   @throws[Exception]
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
-    FMLLog.log(Level.ERROR, cause, "SimpleChannelHandlerScalaWrapper exception")
+    LogHelper.error("SimpleChannelHandlerScalaWrapper exception", cause)
     super.exceptionCaught(ctx, cause)
   }
 }

@@ -1,38 +1,24 @@
 package net.katsstuff.spookyharvestmoon.entity
 
-import net.katsstuff.spookyharvestmoon.SpookyConfig
-import net.katsstuff.spookyharvestmoon.data.Vector3
-import net.katsstuff.spookyharvestmoon.lib.LibEntityName
-import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.{EntityLivingBase, EnumCreatureAttribute, SharedMonsterAttributes}
-import net.minecraft.entity.ai.{
-  EntityAIBase,
-  EntityAIFleeSun,
-  EntityAIHurtByTarget,
-  EntityAILookIdle,
-  EntityAIMoveTowardsRestriction,
-  EntityAINearestAttackableTarget,
-  EntityAIRestrictSun,
-  EntityAISwimming,
-  EntityAIWander,
-  EntityAIWanderAvoidWater,
-  EntityAIWatchClosest
-}
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.network.datasync.{DataParameter, DataSerializers, EntityDataManager}
-import net.minecraft.world.World
 import java.lang.{Byte => JByte}
 
-import net.katsstuff.spookyharvestmoon.client.particle.{GlowTexture, ParticleUtil}
-import net.minecraft.entity.ai.attributes.IAttributeInstance
-import net.minecraft.entity.monster.EntityBlaze
+import net.katsstuff.spookyharvestmoon.client.particle.GlowTexture
+import net.katsstuff.spookyharvestmoon.data.Vector3
+import net.katsstuff.spookyharvestmoon.lib.LibEntityName
+import net.katsstuff.spookyharvestmoon.{SpookyConfig, SpookyHarvestMoon}
+import net.minecraft.block.material.Material
+import net.minecraft.block.state.IBlockState
+import net.minecraft.entity.ai.{EntityAIBase, EntityAIFleeSun, EntityAIHurtByTarget, EntityAILookIdle, EntityAIMoveTowardsRestriction, EntityAINearestAttackableTarget, EntityAIRestrictSun, EntityAIWanderAvoidWater, EntityAIWatchClosest}
+import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.projectile.EntitySmallFireball
+import net.minecraft.entity.{EnumCreatureAttribute, SharedMonsterAttributes}
 import net.minecraft.init.SoundEvents
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.network.datasync.{DataParameter, DataSerializers, EntityDataManager}
 import net.minecraft.pathfinding.PathNodeType
 import net.minecraft.util.math.{BlockPos, MathHelper}
-import net.minecraft.util.{DamageSource, EnumParticleTypes, SoundEvent}
+import net.minecraft.util.{DamageSource, SoundEvent}
+import net.minecraft.world.World
 import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 
 object EntityWillOTheWisp {
@@ -58,7 +44,7 @@ class EntityWillOTheWisp(_world: World) extends EntityFlyingMob(_world) {
   override def initEntityAI(): Unit = {
     tasks.addTask(2, new EntityAIRestrictSun(this))
     tasks.addTask(3, new EntityAIFleeSun(this, 1.0D))
-    tasks.addTask(4, new EntityBlaze.AIFireballAttack(this))
+    tasks.addTask(4, new AIFireballAttack(this))
     tasks.addTask(5, new EntityAIMoveTowardsRestriction(this, 1D))
     tasks.addTask(7, new EntityAIWanderAvoidWater(this, 1D, 0F))
     tasks.addTask(8, new EntityAIWatchClosest(this, classOf[EntityPlayer], 8.0F))
@@ -104,8 +90,7 @@ class EntityWillOTheWisp(_world: World) extends EntityFlyingMob(_world) {
         )
         val motion =
           Vector3(0.0125f * (rand.nextFloat - 0.5f), 0.075f * rand.nextFloat, 0.0125f * (rand.nextFloat - 0.5f))
-        //FIXME: Calls client side only stuff
-        ParticleUtil.spawnParticleGlow(world, pos, motion, r, g, b, size * 15F, 40, GlowTexture.Mote)
+        SpookyHarvestMoon.proxy.spawnParticleGlow(world, pos, motion, r, g, b, size * 15F, 40, GlowTexture.Mote)
       }
     }
   }

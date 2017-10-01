@@ -15,6 +15,7 @@ object LogHelper {
   private var logger: Logger = _
 
   private def log(level: Level, obj: Any): Unit = logger.log(level, String.valueOf(obj))
+  private def log(level: Level, obj: Any, e: Throwable): Unit = logger.log(level, String.valueOf(obj), e)
 
   def assignLog(logger: Logger): Unit = {
     if (this.logger != null) {
@@ -26,6 +27,7 @@ object LogHelper {
   def all(obj: Any):   Unit = log(Level.ALL, obj)
   def debug(obj: Any): Unit = log(Level.DEBUG, obj)
   def error(obj: Any): Unit = log(Level.ERROR, obj)
+  def error(obj: Any, e: Throwable): Unit = log(Level.ERROR, obj, e)
   def fatal(obj: Any): Unit = log(Level.FATAL, obj)
   def info(obj: Any):  Unit = log(Level.INFO, obj)
   def off(obj: Any):   Unit = log(Level.OFF, obj)

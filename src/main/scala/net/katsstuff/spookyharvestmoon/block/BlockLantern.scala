@@ -16,13 +16,18 @@ import net.minecraft.world.{IBlockAccess, World}
 import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 import scala.collection.JavaConverters._
 
+import com.google.common.base.Predicate
+
 object BlockLantern {
   protected val StandingAABB     = new AxisAlignedBB(0.4D, 0.0D, 0.4D, 0.6D, 0.6D, 0.6D)
   protected val LanternNorthAABB = new AxisAlignedBB(0.35D, 0.2D, 0.7D, 0.65D, 0.8D, 1.0D)
   protected val LanternSouthAABB = new AxisAlignedBB(0.35D, 0.2D, 0.0D, 0.65D, 0.8D, 0.3D)
   protected val LanternWestAABB  = new AxisAlignedBB(0.7D, 0.2D, 0.35D, 1.0D, 0.8D, 0.64D)
   protected val LanternEastAABB  = new AxisAlignedBB(0.0D, 0.2D, 0.35D, 0.3D, 0.8D, 0.64D)
-  val Facing: PropertyDirection = PropertyDirection.create("facing", (input: EnumFacing) => input != EnumFacing.DOWN)
+  val Facing: PropertyDirection = {
+    val pred: Predicate[EnumFacing] = (input: EnumFacing) => input != EnumFacing.DOWN
+    PropertyDirection.create("facing", pred)
+  }
 }
 //A lot copied from BlockTorch
 class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) {

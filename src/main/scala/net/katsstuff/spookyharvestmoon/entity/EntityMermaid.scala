@@ -25,8 +25,7 @@ class EntityMermaid(_world: World) extends EntitySpookySpawnedMob(_world) {
   }
 
   def moving: Boolean = this.dataManager.get(EntityMermaid.Moving)
-
-  private def moving_=(moving: Boolean): Unit = dataManager.set(EntityMermaid.Moving, Boolean.box(moving))
+  def moving_=(moving: Boolean): Unit = dataManager.set(EntityMermaid.Moving, Boolean.box(moving))
 
   override def getBlockPathWeight(pos: BlockPos): Float =
     if (world.getBlockState(pos).getMaterial == Material.WATER) 10.0F + world.getLightBrightness(pos) - 0.5F
@@ -95,10 +94,10 @@ class SwimmingMoveHelper(mermaid: EntityMermaid) extends EntityMoveHelper(mermai
         10.0F,
         40.0F
       )
-      mermaid.moving_=(true)
+      mermaid.moving = true
     } else {
       mermaid.setAIMoveSpeed(0.0F)
-      mermaid.moving_=(false)
+      mermaid.moving = false
     }
   }
 }

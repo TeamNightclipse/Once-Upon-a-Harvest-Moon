@@ -5,7 +5,7 @@ import net.minecraft.block.state.IBlockState
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
-class EntitySpookySpawnedMob(_world: World) extends EntitySpookyBaseMob(_world) {
+abstract class EntitySpookySpawnedMob(_world: World) extends EntitySpookyBaseMob(_world) {
 
   def spawnEntry: SpookyConfig.Spawns.SpawnEntry
 
