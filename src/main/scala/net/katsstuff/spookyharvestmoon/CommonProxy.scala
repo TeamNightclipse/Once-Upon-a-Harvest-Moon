@@ -12,8 +12,18 @@ import scala.reflect.ClassTag
 
 import net.katsstuff.spookyharvestmoon.entity._
 import net.katsstuff.spookyharvestmoon.helper.IdState
+import net.katsstuff.spookyharvestmoon.item.ItemLantern
+import net.minecraft.item.Item
+import net.minecraftforge.event.RegistryEvent
 
-object CommonProxy
+object CommonProxy {
+
+  def registerItems(event: RegistryEvent.Register[Item]): Unit = {
+    event.getRegistry.registerAll(
+      (new ItemLantern).setRegistryName(LibItemName.Lantern)
+    )
+  }
+}
 case class Egg(primary: Int, secondary: Int)
 class CommonProxy {
 
