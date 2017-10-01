@@ -17,6 +17,8 @@ import scala.collection.JavaConverters._
 
 import com.google.common.base.{Predicate => GPredicate}
 
+import io.netty.buffer.ByteBuf
+import net.katsstuff.spookyharvestmoon.network.scalachannel.MessageConverter
 import net.minecraft.entity.{Entity, EntityLivingBase}
 import net.minecraft.util.math.{BlockPos, MathHelper, Vec3d}
 
@@ -540,6 +542,17 @@ final case class Vector3(@BeanProperty x: Double, @BeanProperty y: Double, @Bean
 }
 
 object Vector3 {
+
+  implicit val vector3Converter: MessageConverter[Vector3] = new MessageConverter[Vector3] {
+    override def toBytes(a: Vector3, buf: ByteBuf): Unit = {
+      buf.writeDouble(a.x)
+      buf.writeDouble(a.y)
+      buf.writeDouble(a.z)
+    }
+
+    override def fromBytes(buf: ByteBuf): Vector3 =
+      Vector3(buf.readDouble(), buf.readDouble(), buf.readDouble())
+  }
 
   private val rand = new Random
 
