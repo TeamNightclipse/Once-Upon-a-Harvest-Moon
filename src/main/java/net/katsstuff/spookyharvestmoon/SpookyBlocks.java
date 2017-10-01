@@ -2,7 +2,7 @@ package net.katsstuff.spookyharvestmoon;
 
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
-@GameRegistry.ObjectHolder(JLibMod.Id)
+@GameRegistry.ObjectHolder(JLibMod.ID)
 public class SpookyBlocks {
 
 }

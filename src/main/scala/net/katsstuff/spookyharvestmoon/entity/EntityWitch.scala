@@ -1,9 +1,9 @@
 package net.katsstuff.spookyharvestmoon.entity
 
-import net.minecraft.entity.{EntityLiving, EntityLivingBase, IRangedAttackMob, SharedMonsterAttributes}
+import net.katsstuff.spookyharvestmoon.lib.LibEntityName
 import net.minecraft.entity.ai.{EntityAIAttackRanged, EntityAIHurtByTarget, EntityAILookIdle, EntityAINearestAttackableTarget, EntityAISwimming, EntityAIWanderAvoidWater, EntityAIWatchClosest}
-import net.minecraft.entity.monster.EntityMob
 import net.minecraft.entity.player.{EntityPlayer, EntityPlayerMP}
+import net.minecraft.entity.{EntityLiving, EntityLivingBase, IRangedAttackMob, SharedMonsterAttributes}
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.pathfinding.PathNavigateGround
 import net.minecraft.potion.PotionEffect
@@ -76,4 +76,6 @@ class EntityWitch(_world: World) extends EntitySpookyBaseMob(_world) with IRange
   }
 
   override def isNonBoss = false
+
+  override def lootTableName: String = LibEntityName.Witch
 }
