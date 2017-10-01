@@ -1,0 +1,20 @@
+[
+  {
+	"modid": "spookyharvestmoon",
+	"name": "Once upon a Harvest Moon",
+	"description": "A minecraft mod for #spookyjam",
+	"version": "${version}",
+	"mcversion": "${mcversion}",
+	"url": "",
+	"updateUrl": "",
+	"authorList": [
+	  ""
+	],
+	"credits": "",
+	"logoFile": "",
+	"screenshots": [],
+	"dependencies": [
+	  ""
+	]
+  }
+]
