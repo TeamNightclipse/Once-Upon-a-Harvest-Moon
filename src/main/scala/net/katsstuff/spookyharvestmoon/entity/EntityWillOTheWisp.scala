@@ -6,8 +6,9 @@ import scala.util.Random
 
 import net.katsstuff.spookyharvestmoon.client.particle.{GlowTexture, ParticleUtil}
 import net.katsstuff.spookyharvestmoon.data.Vector3
+import net.katsstuff.spookyharvestmoon.helper.LogHelper
 import net.katsstuff.spookyharvestmoon.lib.LibEntityName
-import net.katsstuff.spookyharvestmoon.{SpookyConfig, SpookyHarvestMoon}
+import net.katsstuff.spookyharvestmoon.{SpookyConfig, SpookyEffect, SpookyHarvestMoon}
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.ai._
@@ -18,6 +19,7 @@ import net.minecraft.init.SoundEvents
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.network.datasync.{DataParameter, DataSerializers, EntityDataManager}
 import net.minecraft.pathfinding.PathNodeType
+import net.minecraft.potion.PotionEffect
 import net.minecraft.util.math.{BlockPos, MathHelper}
 import net.minecraft.util.{DamageSource, SoundEvent}
 import net.minecraft.world.{DifficultyInstance, World}
@@ -109,15 +111,15 @@ class EntityWillOTheWisp(_world: World) extends EntityFlyingMob(_world) {
     val posToDepth    = waterBlocks.groupBy(v => (v.getX, v.getZ)).mapValues(_.length)
     val averageDepth  = Math.round(posToDepth.values.sum.toDouble / posToDepth.size)
     val filteredPoses = posToDepth.filter(_._2 >= averageDepth)
-    val applicablePoses = filteredPoses.keys.flatMap {
-      case (x, z) =>
+    val applicablePoses = filteredPoses.flatMap {
+      case ((x, z), depth) =>
         val isSurrounded = (x - 2 to x + 2).forall(
           xTest => (z - 2 to z + 2).forall(zTest => filteredPoses.get((xTest, zTest)).exists(_ >= averageDepth))
         )
         if (!isSurrounded) None
         else {
-          val topPos = world.getTopSolidOrLiquidBlock(new BlockPos(x, 0, z))
-          if (world.getBlockState(topPos).getMaterial == Material.WATER) Some(topPos) else None
+          val solidPos = world.getTopSolidOrLiquidBlock(new BlockPos(x, 0, z))
+          if (world.getBlockState(solidPos).getMaterial == Material.WATER) Some(solidPos.up(depth)) else None
         }
     }
 
@@ -215,17 +217,20 @@ class AIFireballAttack(wisp: EntityWillOTheWisp) extends EntityAIBase {
     target != null && target.isEntityAlive
   }
 
-  override def startExecuting(): Unit =
-    this.attackStep = 0
+  override def startExecuting(): Unit = {
+    attackStep = 0
+    attackTime = 0
+  }
 
   override def updateTask(): Unit = {
-    this.attackTime -= 1
+    attackTime += 1
     val target = wisp.getAttackTarget
     val dist2  = wisp.getDistanceSq(target)
-    if (dist2 < 2 * 2) {
-      if (attackTime <= 0) {
-        attackTime = 20
+    if (dist2 < 5 * 5) {
+      if (attackTime > 20) {
+        attackTime = 0
         wisp.attackEntityAsMob(target)
+        target.addPotionEffect(new PotionEffect(SpookyEffect.Drowning, 20 * 5))
 
         val basePos = wisp.pos
         val color   = EntityWillOTheWisp.formToColor(wisp.form)
@@ -237,7 +242,7 @@ class AIFireballAttack(wisp: EntityWillOTheWisp) extends EntityAIBase {
         for (i <- 0 until 32) {
           val motion = Vector3.limitRandomDirection(towardsTarget, 20F)
           val pos    = basePos.offset(motion, Math.random())
-          ParticleUtil.spawnParticleGlowPacket(wisp.world, pos, motion / 10D, r, g, b, size * 10F, 40, GlowTexture.Mote, 32)
+          ParticleUtil.spawnParticleGlowPacket(wisp.world, pos, motion / 3D, r, g, b, size * 10F, 40, GlowTexture.Mote, 32)
         }
       }
       wisp.getMoveHelper.setMoveTo(target.posX, target.posY, target.posZ, 1D)
@@ -245,16 +250,11 @@ class AIFireballAttack(wisp: EntityWillOTheWisp) extends EntityAIBase {
       val dx = target.posX - wisp.posX
       val dy = target.getEntityBoundingBox.minY + (target.height / 2F) - (wisp.posY + (wisp.height / 2F))
       val dz = target.posZ - wisp.posZ
-      if (attackTime <= 0) {
-        attackStep += 1
-        if (attackStep == 1) {
-          attackTime = 60
-        } else if (attackStep <= 4) attackTime = 6
-        else {
-          attackTime = 100
-          attackStep = 0
-        }
-        if (attackStep > 1) {
+
+      if(attackStep > 1 && attackStep <= 4) {
+        if(attackTime > 9) {
+          attackTime = 0
+          attackStep += 1
           val distSq = MathHelper.sqrt(MathHelper.sqrt(dist2)) * 0.5F
           wisp.world.playEvent(null, 1018, new BlockPos(wisp.posX, wisp.posY, wisp.posZ), 0)
 
@@ -266,10 +266,17 @@ class AIFireballAttack(wisp: EntityWillOTheWisp) extends EntityAIBase {
             dy,
             dz + wisp.getRNG.nextGaussian * distSq
           )
-          fireball.posY = wisp.posY + (wisp.height / 2.0F) + 0.5D
+          fireball.posY = wisp.posY + (wisp.height / 2F) + 0.5D
           wisp.world.spawnEntity(fireball)
         }
       }
+      else if(attackTime > 30) {
+        if(attackStep > 4) attackStep = 1
+        else attackStep += 1
+
+        attackTime = 0
+      }
+
       wisp.getLookHelper.setLookPositionWithEntity(target, 10.0F, 10.0F)
     } else {
       wisp.getNavigator.clearPath()

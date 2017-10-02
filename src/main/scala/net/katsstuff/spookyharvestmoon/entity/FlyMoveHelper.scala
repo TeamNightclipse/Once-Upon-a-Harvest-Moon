@@ -24,13 +24,12 @@ class FlyMoveHelper(flyingMob: EntityFlyingMob) extends EntityMoveHelper(flyingM
           (speed * flyingMob.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getAttributeValue).toFloat
         this.flyingMob.setAIMoveSpeed(flyingMob.getAIMoveSpeed + (acceleration - flyingMob.getAIMoveSpeed) * 0.125F)
 
-        var d4 = Math.sin((flyingMob.ticksExisted + flyingMob.getEntityId) * 0.5D) * 0.05D
+        val d4 = 0.0025D
         val d5 = Math.cos(flyingMob.rotationYaw * 0.017453292F)
         val d6 = Math.sin(flyingMob.rotationYaw * 0.017453292F)
 
         flyingMob.motionX += d4 * d5
         flyingMob.motionZ += d4 * d6
-        d4 = Math.sin((flyingMob.ticksExisted + flyingMob.getEntityId) * 0.75D) * 0.05D
 
         flyingMob.motionY += d4 * (d6 + d5) * 0.25D
         flyingMob.motionY += flyingMob.getAIMoveSpeed * dy * 0.1D

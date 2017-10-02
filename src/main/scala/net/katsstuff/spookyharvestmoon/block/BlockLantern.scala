@@ -30,7 +30,7 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
   setDefaultState(
     blockState.getBaseState
       .withProperty(BlockLantern.Facing, EnumFacing.UP)
-      .withProperty(BlockLantern.Light, true)
+      .withProperty(BlockLantern.Light, Boolean.box(true))
   )
   setTickRandomly(true)
   setSoundType(SoundType.METAL)
@@ -160,7 +160,7 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
       hitY: Float,
       hitZ: Float
   ): Boolean = {
-    world.setBlockState(pos, state.withProperty(BlockLantern.Light, !state.getValue(BlockLantern.Light)))
+    world.setBlockState(pos, state.withProperty(BlockLantern.Light, Boolean.box(!state.getValue(BlockLantern.Light))))
     true
   }
 
@@ -197,7 +197,7 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
   override def getStateFromMeta(meta: Int): IBlockState =
     getDefaultState
       .withProperty(BlockLantern.Facing, getFacing(meta))
-      .withProperty(BlockLantern.Light, (meta & 8) > 0)
+      .withProperty(BlockLantern.Light, Boolean.box((meta & 8) > 0))
 
   @SideOnly(Side.CLIENT)
   override def getBlockLayer = BlockRenderLayer.CUTOUT
@@ -215,7 +215,7 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
   override def withMirror(state: IBlockState, mirrorIn: Mirror): IBlockState =
     state.withRotation(mirrorIn.toRotation(state.getValue(BlockLantern.Facing)))
 
-  override protected def createBlockState: BlockStateContainer = new BlockStateContainer(this, BlockLantern.Facing)
+  override protected def createBlockState: BlockStateContainer = new BlockStateContainer(this, BlockLantern.Facing, BlockLantern.Light)
 
   override def getBlockFaceShape(worldIn: IBlockAccess, state: IBlockState, pos: BlockPos, face: EnumFacing) =
     BlockFaceShape.UNDEFINED

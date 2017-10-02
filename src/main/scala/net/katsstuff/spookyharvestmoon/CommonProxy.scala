@@ -6,12 +6,14 @@ import scala.reflect.ClassTag
 import net.katsstuff.spookyharvestmoon.block.{BlockHook, BlockLantern}
 import net.katsstuff.spookyharvestmoon.client.particle.{GlowTexture, IGlowParticle}
 import net.katsstuff.spookyharvestmoon.data.Vector3
+import net.katsstuff.spookyharvestmoon.effect.PotionDrowning
 import net.katsstuff.spookyharvestmoon.entity._
 import net.katsstuff.spookyharvestmoon.helper.IdState
 import net.katsstuff.spookyharvestmoon.lib.{LibEntityName, LibMod}
 import net.minecraft.block.Block
 import net.minecraft.entity.{Entity, EntityLiving, EnumCreatureType}
 import net.minecraft.item.{Item, ItemBlock}
+import net.minecraft.potion.Potion
 import net.minecraft.util.ResourceLocation
 import net.minecraft.world.World
 import net.minecraft.world.biome.Biome
@@ -26,16 +28,22 @@ object CommonProxy {
   def registerItems(event: RegistryEvent.Register[Block]): Unit =
     event.getRegistry.registerAll(
       (new BlockLantern).setRegistryName(LibBlockName.Lantern),
-      (new BlockHook).setRegistryName(LibBlockName.Lantern),
+      (new BlockHook).setRegistryName(LibBlockName.Hook)
     )
 
   @SubscribeEvent
   def registerBlocks(event: RegistryEvent.Register[Item]): Unit =
     event.getRegistry.registerAll(
       new ItemBlock(SpookyBlocks.Lantern).setRegistryName(LibBlockName.Lantern),
-      new ItemBlock(SpookyBlocks.Hook).setRegistryName(LibBlockName.Hook),
+      new ItemBlock(SpookyBlocks.Hook).setRegistryName(LibBlockName.Hook)
     )
+
+  @SubscribeEvent
+  def registerPotions(event: RegistryEvent.Register[Potion]): Unit = {
+    event.getRegistry.registerAll((new PotionDrowning).setRegistryName(LibEffectName.Drowning))
+  }
 }
+
 case class Egg(primary: Int, secondary: Int)
 class CommonProxy {
 

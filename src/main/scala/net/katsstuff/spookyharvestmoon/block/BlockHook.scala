@@ -38,6 +38,7 @@ class BlockHook extends BlockSpookyBase(LibBlockName.Hook, Material.IRON) {
       case EnumFacing.SOUTH => BlockHook.TODOAABB
       case EnumFacing.NORTH => BlockHook.TODOAABB
       case EnumFacing.DOWN  => BlockHook.TODOAABB
+      case _                => BlockHook.TODOAABB
     }
 
   @Nullable
