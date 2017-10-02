@@ -3,7 +3,7 @@ package net.katsstuff.spookyharvestmoon
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
-import net.katsstuff.spookyharvestmoon.block.BlockLantern
+import net.katsstuff.spookyharvestmoon.block.{BlockHook, BlockLantern}
 import net.katsstuff.spookyharvestmoon.client.particle.{GlowTexture, IGlowParticle}
 import net.katsstuff.spookyharvestmoon.data.Vector3
 import net.katsstuff.spookyharvestmoon.entity._
@@ -24,11 +24,17 @@ object CommonProxy {
 
   @SubscribeEvent
   def registerItems(event: RegistryEvent.Register[Block]): Unit =
-    event.getRegistry.registerAll((new BlockLantern).setRegistryName(LibBlockName.Lantern))
+    event.getRegistry.registerAll(
+      (new BlockLantern).setRegistryName(LibBlockName.Lantern),
+      (new BlockHook).setRegistryName(LibBlockName.Lantern),
+    )
 
   @SubscribeEvent
   def registerBlocks(event: RegistryEvent.Register[Item]): Unit =
-    event.getRegistry.registerAll(new ItemBlock(SpookyBlocks.Lantern).setRegistryName(LibBlockName.Lantern))
+    event.getRegistry.registerAll(
+      new ItemBlock(SpookyBlocks.Lantern).setRegistryName(LibBlockName.Lantern),
+      new ItemBlock(SpookyBlocks.Hook).setRegistryName(LibBlockName.Hook),
+    )
 }
 case class Egg(primary: Int, secondary: Int)
 class CommonProxy {

@@ -4,47 +4,46 @@ import java.util.Random
 
 import javax.annotation.Nullable
 
-import net.katsstuff.spookyharvestmoon.LibBlockName
-import net.minecraft.block.{Block, SoundType}
-import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyDirection
-import net.minecraft.block.state.{BlockFaceShape, BlockStateContainer, IBlockState}
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.util.{BlockRenderLayer, EnumFacing, EnumParticleTypes, Mirror, Rotation}
-import net.minecraft.util.math.{AxisAlignedBB, BlockPos}
-import net.minecraft.world.{IBlockAccess, World}
-import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 import scala.collection.JavaConverters._
 
-import com.google.common.base.Predicate
+import net.katsstuff.spookyharvestmoon.{LibBlockName, SpookyBlocks}
+import net.minecraft.block.material.Material
+import net.minecraft.block.properties.{PropertyBool, PropertyDirection}
+import net.minecraft.block.state.{BlockFaceShape, BlockStateContainer, IBlockState}
+import net.minecraft.block.{Block, SoundType}
+import net.minecraft.entity.EntityLivingBase
+import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.item.{Item, ItemStack}
+import net.minecraft.util.math.{AxisAlignedBB, BlockPos}
+import net.minecraft.util.{BlockRenderLayer, EnumFacing, EnumHand, EnumParticleTypes, Mirror, NonNullList, Rotation}
+import net.minecraft.world.{IBlockAccess, World}
+import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 
 object BlockLantern {
-  protected val StandingAABB     = new AxisAlignedBB(0.4D, 0.0D, 0.4D, 0.6D, 0.6D, 0.6D)
-  protected val LanternNorthAABB = new AxisAlignedBB(0.35D, 0.2D, 0.7D, 0.65D, 0.8D, 1.0D)
-  protected val LanternSouthAABB = new AxisAlignedBB(0.35D, 0.2D, 0.0D, 0.65D, 0.8D, 0.3D)
-  protected val LanternWestAABB  = new AxisAlignedBB(0.7D, 0.2D, 0.35D, 1.0D, 0.8D, 0.64D)
-  protected val LanternEastAABB  = new AxisAlignedBB(0.0D, 0.2D, 0.35D, 0.3D, 0.8D, 0.64D)
-  val Facing: PropertyDirection = {
-    val pred: Predicate[EnumFacing] = (input: EnumFacing) => input != EnumFacing.DOWN
-    PropertyDirection.create("facing", pred)
-  }
+  protected val TODOAABB = new AxisAlignedBB(0.4D, 0.0D, 0.4D, 0.6D, 0.6D, 0.6D)
+  val Facing: PropertyDirection = PropertyDirection.create("facing")
+  val Light:  PropertyBool      = PropertyBool.create("light")
 }
 //A lot copied from BlockTorch
 class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) {
 
-  setDefaultState(blockState.getBaseState.withProperty(BlockLantern.Facing, EnumFacing.UP))
+  setDefaultState(
+    blockState.getBaseState
+      .withProperty(BlockLantern.Facing, EnumFacing.UP)
+      .withProperty(BlockLantern.Light, true)
+  )
   setTickRandomly(true)
-  setLightLevel(1F)
   setSoundType(SoundType.METAL)
-  setHardness(0.0F)
+  setHardness(1F)
 
   override def getBoundingBox(state: IBlockState, source: IBlockAccess, pos: BlockPos): AxisAlignedBB =
     state.getValue(BlockLantern.Facing) match {
-      case EnumFacing.EAST  => BlockLantern.LanternEastAABB
-      case EnumFacing.WEST  => BlockLantern.LanternWestAABB
-      case EnumFacing.SOUTH => BlockLantern.LanternSouthAABB
-      case EnumFacing.NORTH => BlockLantern.LanternNorthAABB
-      case _                => BlockLantern.StandingAABB
+      case EnumFacing.EAST  => BlockLantern.TODOAABB
+      case EnumFacing.WEST  => BlockLantern.TODOAABB
+      case EnumFacing.SOUTH => BlockLantern.TODOAABB
+      case EnumFacing.NORTH => BlockLantern.TODOAABB
+      case EnumFacing.UP    => BlockLantern.TODOAABB
+      case EnumFacing.DOWN  => BlockLantern.TODOAABB
     }
 
   @Nullable
@@ -55,23 +54,29 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
 
   override def isFullCube(state: IBlockState): Boolean = false
 
+  override def getLightValue(state: IBlockState, world: IBlockAccess, pos: BlockPos): Int =
+    if (state.getValue(BlockLantern.Light)) 15 else 0
+
   private def canPlaceOn(worldIn: World, pos: BlockPos): Boolean = {
     val state = worldIn.getBlockState(pos)
     state.getBlock.canPlaceTorchOnTop(state, worldIn, pos)
   }
 
   override def canPlaceBlockAt(world: World, pos: BlockPos): Boolean =
-    BlockLantern.Facing.getAllowedValues.asScala.exists(canPlaceAt(world, pos, _))
+    BlockLantern.Facing.getAllowedValues.asScala.exists(canPlaceAt(world, pos, _, existingBlock = false))
 
-  private def canPlaceAt(world: World, pos: BlockPos, facing: EnumFacing): Boolean = {
-    val placeOn   = pos.offset(facing.getOpposite)
-    val state     = world.getBlockState(placeOn)
-    val block     = state.getBlock
-    val faceShape = state.getBlockFaceShape(world, placeOn, facing)
-    if (facing == EnumFacing.UP && canPlaceOn(world, placeOn)) true
-    else if ((facing != EnumFacing.UP) && (facing != EnumFacing.DOWN))
-      !Block.isExceptBlockForAttachWithPiston(block) && (faceShape == BlockFaceShape.SOLID)
-    else false
+  private def canPlaceAt(world: World, pos: BlockPos, facing: EnumFacing, existingBlock: Boolean): Boolean = {
+    val placeOn = pos.offset(facing.getOpposite)
+    if (facing == EnumFacing.UP) {
+      canPlaceOn(world, placeOn)
+    } else {
+      if (existingBlock) SpookyBlocks.Hook.canPlaceBlockAt(world, pos)
+      else {
+        val state = world.getBlockState(placeOn)
+        val block = state.getBlock
+        block == SpookyBlocks.Hook
+      }
+    }
   }
 
   override def getStateForPlacement(
@@ -84,15 +89,16 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
       meta: Int,
       placer: EntityLivingBase
   ): IBlockState =
-    if (canPlaceAt(worldIn, pos, facing)) getDefaultState.withProperty(BlockLantern.Facing, facing)
+    if (canPlaceAt(worldIn, pos, facing, existingBlock = false))
+      getDefaultState.withProperty(BlockLantern.Facing, facing)
     else {
       EnumFacing.Plane.HORIZONTAL.asScala
-        .find(canPlaceAt(worldIn, pos, _))
+        .find(canPlaceAt(worldIn, pos, _, existingBlock = false))
         .map(getDefaultState.withProperty(BlockLantern.Facing, _))
         .getOrElse(getDefaultState)
     }
 
-  override def onBlockAdded(worldIn: World, pos: BlockPos, state: IBlockState): Unit = checkForDrop(worldIn, pos, state)
+  override def onBlockAdded(worldIn: World, pos: BlockPos, state: IBlockState): Unit = checkAndDrop(worldIn, pos, state)
 
   override def neighborChanged(
       state: IBlockState,
@@ -102,25 +108,28 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
       fromPos: BlockPos
   ): Unit = onNeighborChangeInternal(worldIn, pos, state)
 
-  protected def onNeighborChangeInternal(worldIn: World, pos: BlockPos, state: IBlockState): Boolean =
-    if (!checkForDrop(worldIn, pos, state)) true
+  private def onNeighborChangeInternal(worldIn: World, pos: BlockPos, state: IBlockState): Boolean =
+    if (!checkAndDrop(worldIn, pos, state)) true
     else {
       val facing   = state.getValue(BlockLantern.Facing)
       val axis     = facing.getAxis
       val opposite = facing.getOpposite
       val placedOn = pos.offset(opposite)
-      val isDropped = (axis.isHorizontal &&
-        (worldIn.getBlockState(placedOn).getBlockFaceShape(worldIn, placedOn, facing) != BlockFaceShape.SOLID)) ||
-        (axis.isVertical && !canPlaceOn(worldIn, placedOn))
-      if (isDropped) {
+      val shouldDrop =
+        if (facing != EnumFacing.DOWN)
+          worldIn.getBlockState(placedOn).getBlockFaceShape(worldIn, placedOn, facing) != BlockFaceShape.SOLID
+        else !canPlaceOn(worldIn, placedOn)
+
+      if (shouldDrop) {
         dropBlockAsItem(worldIn, pos, state, 0)
         worldIn.setBlockToAir(pos)
         true
       } else false
     }
 
-  protected def checkForDrop(worldIn: World, pos: BlockPos, state: IBlockState): Boolean =
-    if ((state.getBlock == this) && this.canPlaceAt(worldIn, pos, state.getValue(BlockLantern.Facing))) true
+  private def checkAndDrop(worldIn: World, pos: BlockPos, state: IBlockState): Boolean =
+    if ((state.getBlock == this) && canPlaceAt(worldIn, pos, state.getValue(BlockLantern.Facing), existingBlock = true))
+      true
     else {
       if (worldIn.getBlockState(pos).getBlock == this) {
         dropBlockAsItem(worldIn, pos, state, 0)
@@ -129,50 +138,75 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
       false
     }
 
+  override def getDrops(
+      drops: NonNullList[ItemStack],
+      world: IBlockAccess,
+      pos: BlockPos,
+      state: IBlockState,
+      fortune: Int
+  ): Unit = {
+    drops.add(new ItemStack(SpookyBlocks.Hook))
+    drops.add(new ItemStack(SpookyBlocks.Lantern))
+  }
+
+  override def onBlockActivated(
+      world: World,
+      pos: BlockPos,
+      state: IBlockState,
+      playerIn: EntityPlayer,
+      hand: EnumHand,
+      facing: EnumFacing,
+      hitX: Float,
+      hitY: Float,
+      hitZ: Float
+  ): Boolean = {
+    world.setBlockState(pos, state.withProperty(BlockLantern.Light, !state.getValue(BlockLantern.Light)))
+    true
+  }
+
   @SideOnly(Side.CLIENT)
-  override def randomDisplayTick(stateIn: IBlockState, worldIn: World, pos: BlockPos, rand: Random): Unit = {
-    val facing  = stateIn.getValue(BlockLantern.Facing)
-    val x       = pos.getX + 0.5D
-    val y       = pos.getY + 0.7D
-    val z       = pos.getZ + 0.5D
-    val vOffset = 0.22D
-    val hOffset = 0.27D
-    //TODO: Replace with glow particles
-    if (facing.getAxis.isHorizontal) {
-      val placedOn = facing.getOpposite
-      val px       = x + hOffset * placedOn.getFrontOffsetX
-      val py       = y + vOffset
-      val pz       = z + hOffset * placedOn.getFrontOffsetX
-      worldIn.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, px, py, pz, 0D, 0D, 0D)
-      worldIn.spawnParticle(EnumParticleTypes.FLAME, px, py, pz, 0D, 0D, 0D)
-    } else {
-      worldIn.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, x, y, z, 0.0D, 0.0D, 0.0D)
-      worldIn.spawnParticle(EnumParticleTypes.FLAME, x, y, z, 0.0D, 0.0D, 0.0D)
+  override def randomDisplayTick(state: IBlockState, worldIn: World, pos: BlockPos, rand: Random): Unit = {
+    if (state.getValue(BlockLantern.Light)) {
+      val facing  = state.getValue(BlockLantern.Facing)
+      val x       = pos.getX + 0.5D
+      val y       = pos.getY + 0.7D
+      val z       = pos.getZ + 0.5D
+      val vOffset = 0.22D
+      val hOffset = 0.27D
+      //TODO: Replace with glow particles
+      if (facing.getAxis.isHorizontal) {
+        val placedOn = facing.getOpposite
+        val px       = x + hOffset * placedOn.getFrontOffsetX
+        val py       = y + vOffset
+        val pz       = z + hOffset * placedOn.getFrontOffsetX
+        worldIn.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, px, py, pz, 0D, 0D, 0D)
+        worldIn.spawnParticle(EnumParticleTypes.FLAME, px, py, pz, 0D, 0D, 0D)
+      } else {
+        worldIn.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, x, y, z, 0.0D, 0.0D, 0.0D)
+        worldIn.spawnParticle(EnumParticleTypes.FLAME, x, y, z, 0.0D, 0.0D, 0.0D)
+      }
     }
   }
 
-  override def getStateFromMeta(meta: Int): IBlockState = {
-    val facing = BlockLantern.Facing
-    val state  = getDefaultState
-    meta match {
-      case 1     => state.withProperty(facing, EnumFacing.EAST)
-      case 2     => state.withProperty(facing, EnumFacing.WEST)
-      case 3     => state.withProperty(facing, EnumFacing.SOUTH)
-      case 4     => state.withProperty(facing, EnumFacing.NORTH)
-      case 5 | _ => state.withProperty(facing, EnumFacing.UP)
-    }
+  def getFacing(meta: Int): EnumFacing = {
+    val i = meta & 7
+    if (i > 5) EnumFacing.UP
+    else EnumFacing.getFront(i)
   }
 
-  @SideOnly(Side.CLIENT) override def getBlockLayer = BlockRenderLayer.CUTOUT
+  override def getStateFromMeta(meta: Int): IBlockState =
+    getDefaultState
+      .withProperty(BlockLantern.Facing, getFacing(meta))
+      .withProperty(BlockLantern.Light, (meta & 8) > 0)
+
+  @SideOnly(Side.CLIENT)
+  override def getBlockLayer = BlockRenderLayer.CUTOUT
 
   override def getMetaFromState(state: IBlockState): Int = {
-    state.getValue(BlockLantern.Facing) match {
-      case EnumFacing.EAST                     => 1
-      case EnumFacing.WEST                     => 2
-      case EnumFacing.SOUTH                    => 3
-      case EnumFacing.NORTH                    => 4
-      case EnumFacing.DOWN | EnumFacing.UP | _ => 5
-    }
+    val i = state.getValue(BlockLantern.Facing).getIndex
+
+    if (state.getValue(BlockLantern.Light)) i | 8
+    else i
   }
 
   override def withRotation(state: IBlockState, rot: Rotation): IBlockState =
@@ -181,7 +215,7 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
   override def withMirror(state: IBlockState, mirrorIn: Mirror): IBlockState =
     state.withRotation(mirrorIn.toRotation(state.getValue(BlockLantern.Facing)))
 
-  override protected def createBlockState = new BlockStateContainer(this, BlockLantern.Facing)
+  override protected def createBlockState: BlockStateContainer = new BlockStateContainer(this, BlockLantern.Facing)
 
   override def getBlockFaceShape(worldIn: IBlockAccess, state: IBlockState, pos: BlockPos, face: EnumFacing) =
     BlockFaceShape.UNDEFINED

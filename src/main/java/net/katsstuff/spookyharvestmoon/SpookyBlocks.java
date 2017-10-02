@@ -9,5 +9,7 @@ public class SpookyBlocks {
 
 	@GameRegistry.ObjectHolder(LibBlockName.Lantern)
 	public static final Block Lantern = new Block(Material.IRON);
+	@GameRegistry.ObjectHolder(LibBlockName.Hook)
+	public static final Block Hook = new Block(Material.IRON);
 
 }
