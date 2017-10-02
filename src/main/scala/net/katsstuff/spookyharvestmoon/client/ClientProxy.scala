@@ -2,6 +2,7 @@ package net.katsstuff.spookyharvestmoon.client
 
 import scala.reflect.ClassTag
 
+import net.katsstuff.spookyharvestmoon.client.helper.RenderHelper
 import net.katsstuff.spookyharvestmoon.{CommonProxy, SpookyHarvestMoon}
 import net.katsstuff.spookyharvestmoon.client.particle.ParticleUtil.{counter, random}
 import net.katsstuff.spookyharvestmoon.client.particle.{GlowTexture, IGlowParticle, ParticleGlow, ParticleRenderer, ParticleUtil}
@@ -16,6 +17,7 @@ import net.minecraft.item.Item
 import net.minecraft.world.World
 import net.minecraftforge.client.event.ModelRegistryEvent
 import net.minecraftforge.client.model.ModelLoader
+import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.client.registry.{IRenderFactory, RenderingRegistry}
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
@@ -46,12 +48,18 @@ class ClientProxy extends CommonProxy {
     registerEntityRenderer(new RenderWitch(_))
   }
 
+  override def bakeRenderModels(): Unit = {
+    RenderHelper.bakeModels()
+  }
+
   def registerEntityRenderer[A <: Entity: ClassTag](f: RenderManager => Render[A]): Unit = {
     val factory: IRenderFactory[A] = manager => f(manager)
     RenderingRegistry.registerEntityRenderingHandler(
       implicitly[ClassTag[A]].runtimeClass.asInstanceOf[Class[A]],
       factory
     )
+
+    MinecraftForge.EVENT_BUS.register(particleRenderer)
   }
 
   override def spawnParticleGlow(

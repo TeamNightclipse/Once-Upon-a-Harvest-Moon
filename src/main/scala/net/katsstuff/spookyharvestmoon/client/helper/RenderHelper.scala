@@ -26,6 +26,7 @@ object RenderHelper {
 
     GL11.glEndList()
 
+    /*
     val cylinder = new Cylinder
     cylinder.setDrawStyle(GLU.GLU_FILL)
     cylinder.setNormals(GLU.GLU_FLAT)
@@ -61,6 +62,7 @@ object RenderHelper {
     disk.draw(1F, 0F, 8, 1)
 
     GL11.glEndList()
+    */
   }
 
   private def drawObj(color: Int, alpha: Float, callListId: Int): Unit = {

@@ -32,6 +32,7 @@ object SpookyHarvestMoon {
 
   @Mod.EventHandler
   def init(event: FMLInitializationEvent): Unit = {
+    proxy.bakeRenderModels()
     proxy.registerEntities()
   }
 

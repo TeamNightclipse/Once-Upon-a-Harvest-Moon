@@ -5,7 +5,7 @@ import java.util.Random
 import javax.annotation.Nullable
 
 import net.katsstuff.spookyharvestmoon.LibBlockName
-import net.minecraft.block.Block
+import net.minecraft.block.{Block, SoundType}
 import net.minecraft.block.material.Material
 import net.minecraft.block.properties.PropertyDirection
 import net.minecraft.block.state.{BlockFaceShape, BlockStateContainer, IBlockState}
@@ -35,6 +35,8 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
   setDefaultState(blockState.getBaseState.withProperty(BlockLantern.Facing, EnumFacing.UP))
   setTickRandomly(true)
   setLightLevel(1F)
+  setSoundType(SoundType.METAL)
+  setHardness(0.0F)
 
   override def getBoundingBox(state: IBlockState, source: IBlockAccess, pos: BlockPos): AxisAlignedBB =
     state.getValue(BlockLantern.Facing) match {

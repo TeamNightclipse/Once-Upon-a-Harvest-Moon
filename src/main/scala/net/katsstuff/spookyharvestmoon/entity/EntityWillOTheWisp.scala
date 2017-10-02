@@ -2,39 +2,55 @@ package net.katsstuff.spookyharvestmoon.entity
 
 import java.lang.{Byte => JByte}
 
-import net.katsstuff.spookyharvestmoon.client.particle.GlowTexture
+import scala.util.Random
+
+import net.katsstuff.spookyharvestmoon.client.particle.{GlowTexture, ParticleUtil}
 import net.katsstuff.spookyharvestmoon.data.Vector3
 import net.katsstuff.spookyharvestmoon.lib.LibEntityName
 import net.katsstuff.spookyharvestmoon.{SpookyConfig, SpookyHarvestMoon}
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.ai.{EntityAIBase, EntityAIFleeSun, EntityAIHurtByTarget, EntityAILookIdle, EntityAIMoveTowardsRestriction, EntityAINearestAttackableTarget, EntityAIRestrictSun, EntityAIWanderAvoidWater, EntityAIWatchClosest}
+import net.minecraft.entity.ai._
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.projectile.EntitySmallFireball
-import net.minecraft.entity.{EnumCreatureAttribute, SharedMonsterAttributes}
+import net.minecraft.entity.{EnumCreatureAttribute, IEntityLivingData, SharedMonsterAttributes}
 import net.minecraft.init.SoundEvents
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.network.datasync.{DataParameter, DataSerializers, EntityDataManager}
 import net.minecraft.pathfinding.PathNodeType
 import net.minecraft.util.math.{BlockPos, MathHelper}
 import net.minecraft.util.{DamageSource, SoundEvent}
-import net.minecraft.world.World
+import net.minecraft.world.{DifficultyInstance, World}
 import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 
 object EntityWillOTheWisp {
-  def formToColor(form: Byte): Int =
+  var counter = 0
+  def nextCounter(): Byte = {
+    if (counter == 3) counter = 0
+    else counter += 1
+
+    counter.toByte
+  }
+
+  def formToColor(form: Byte): Int = {
     form match {
-      case 0 => 0xA0A0A0
-      case 1 => 0x802828
+      case 0 => 0x802828
+      case 1 => 0x282860
       case 2 => 0xFF8018
-      case 3 => 0xFFFF18
       case _ => 0xFFFFFF
     }
+  }
 
   private final val Form: DataParameter[JByte] =
     EntityDataManager.createKey(classOf[EntityWillOTheWisp], DataSerializers.BYTE)
 }
 class EntityWillOTheWisp(_world: World) extends EntityFlyingMob(_world) {
+  setSize(0.5F, 0.5F)
+
+  form = {
+    if (world.isRemote) 0
+    else EntityWillOTheWisp.nextCounter()
+  }
 
   setPathPriority(PathNodeType.WATER, -1.0F)
   setPathPriority(PathNodeType.DANGER_FIRE, 0.0F)
@@ -58,16 +74,66 @@ class EntityWillOTheWisp(_world: World) extends EntityFlyingMob(_world) {
     dataManager.register(EntityWillOTheWisp.Form, Byte.box(0))
   }
 
+  override def onInitialSpawn(difficulty: DifficultyInstance, livingData: IEntityLivingData): IEntityLivingData = {
+    val superData = super.onInitialSpawn(difficulty, livingData)
+
+    val pos = findClosestLake.getOrElse(getPosition)
+
+    if (world.isAirBlock(pos.up(2))) {
+      setPositionAndUpdate(pos.getX, pos.getY + 2, pos.getZ)
+    } else if (world.isAirBlock(pos.up(1))) {
+      setPositionAndUpdate(pos.getX, pos.getY + 1, pos.getZ)
+    }
+
+    superData
+  }
+
+  private def findClosestLake: Option[BlockPos] = {
+    val bb = getEntityBoundingBox.grow(32D, 8D, 32D)
+
+    val xMin            = MathHelper.floor(bb.minX)
+    val xMax            = MathHelper.ceil(bb.maxX)
+    val yMin            = MathHelper.floor(bb.minY)
+    val yMax            = MathHelper.ceil(bb.maxY)
+    val zMin            = MathHelper.floor(bb.minZ)
+    val zMax            = MathHelper.ceil(bb.maxZ)
+    val mutableBlockPos = BlockPos.PooledMutableBlockPos.retain()
+
+    val waterBlocks = for {
+      x <- xMin until xMax
+      y <- yMin until yMax
+      z <- zMin until zMax
+      if world.getBlockState(mutableBlockPos.setPos(x, y, z)).getMaterial == Material.WATER
+    } yield new BlockPos(x, y, z)
+
+    val posToDepth    = waterBlocks.groupBy(v => (v.getX, v.getZ)).mapValues(_.length)
+    val averageDepth  = Math.round(posToDepth.values.sum.toDouble / posToDepth.size)
+    val filteredPoses = posToDepth.filter(_._2 >= averageDepth)
+    val applicablePoses = filteredPoses.keys.flatMap {
+      case (x, z) =>
+        val isSurrounded = (x - 2 to x + 2).forall(
+          xTest => (z - 2 to z + 2).forall(zTest => filteredPoses.get((xTest, zTest)).exists(_ >= averageDepth))
+        )
+        if (!isSurrounded) None
+        else {
+          val topPos = world.getTopSolidOrLiquidBlock(new BlockPos(x, 0, z))
+          if (world.getBlockState(topPos).getMaterial == Material.WATER) Some(topPos) else None
+        }
+    }
+
+    Random.shuffle(applicablePoses).headOption
+  }
+
   override protected def applyEntityAttributes(): Unit = {
     super.applyEntityAttributes()
     getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6D)
     getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.23D)
   }
 
-  //TODO: Find out if these sounds are good enough (probably not for hurt and death)
-  override protected def getAmbientSound:                            SoundEvent = SoundEvents.ENTITY_BLAZE_AMBIENT
-  override protected def getHurtSound(damageSourceIn: DamageSource): SoundEvent = SoundEvents.ENTITY_BLAZE_HURT
-  override protected def getDeathSound:                              SoundEvent = SoundEvents.ENTITY_BLAZE_DEATH
+  override def getTalkInterval:                                      Int        = 30
+  override protected def getAmbientSound:                            SoundEvent = SoundEvents.BLOCK_FIRE_AMBIENT
+  override protected def getHurtSound(damageSourceIn: DamageSource): SoundEvent = SoundEvents.BLOCK_FURNACE_FIRE_CRACKLE
+  override protected def getDeathSound:                              SoundEvent = SoundEvents.BLOCK_FIRE_EXTINGUISH
 
   @SideOnly(Side.CLIENT) override def getBrightnessForRender = 15728880
   override def getBrightness                                 = 1.0F
@@ -92,6 +158,22 @@ class EntityWillOTheWisp(_world: World) extends EntityFlyingMob(_world) {
           Vector3(0.0125f * (rand.nextFloat - 0.5f), 0.075f * rand.nextFloat, 0.0125f * (rand.nextFloat - 0.5f))
         SpookyHarvestMoon.proxy.spawnParticleGlow(world, pos, motion, r, g, b, size * 15F, 40, GlowTexture.Mote)
       }
+    } else {
+      if (world.isDaytime && isEntityAlive) {
+        setDead()
+
+        val basePos = pos
+        val color   = EntityWillOTheWisp.formToColor(form)
+        val r       = (color >> 16 & 255) / 255.0F
+        val g       = (color >> 8 & 255) / 255.0F
+        val b       = (color & 255) / 255.0F
+        val size    = 0.4F
+        for (i <- 0 until 32) {
+          val motion = Vector3.randomDirection
+          val pos    = basePos.offset(motion, Math.random())
+          ParticleUtil.spawnParticleGlowPacket(world, pos, motion / 10D, r, g, b, size * 10F, 40, GlowTexture.Mote, 32)
+        }
+      }
     }
   }
 
@@ -103,7 +185,7 @@ class EntityWillOTheWisp(_world: World) extends EntityFlyingMob(_world) {
   override def lootTableName: String                         = LibEntityName.WillOTheWisp
   override def spawnEntry:    SpookyConfig.Spawns.SpawnEntry = SpookyConfig.spawns.willOTheWisp
   override def spawnBlockCheck(state: IBlockState): Boolean = {
-    val spawnMaterial = Seq(Material.GRASS, Material.GROUND, Material.ROCK)
+    val spawnMaterial = Seq(Material.GRASS, Material.GROUND, Material.ROCK, Material.WATER)
     spawnMaterial.contains(state.getMaterial)
   }
 
@@ -143,8 +225,20 @@ class AIFireballAttack(wisp: EntityWillOTheWisp) extends EntityAIBase {
     if (dist2 < 2 * 2) {
       if (attackTime <= 0) {
         attackTime = 20
-        //TODO: Release fire particles
         wisp.attackEntityAsMob(target)
+
+        val basePos = wisp.pos
+        val color   = EntityWillOTheWisp.formToColor(wisp.form)
+        val r       = (color >> 16 & 255) / 255.0F
+        val g       = (color >> 8 & 255) / 255.0F
+        val b       = (color & 255) / 255.0F
+        val size    = 0.4F
+        val towardsTarget = Vector3.directionToEntity(wisp, target)
+        for (i <- 0 until 32) {
+          val motion = Vector3.limitRandomDirection(towardsTarget, 20F)
+          val pos    = basePos.offset(motion, Math.random())
+          ParticleUtil.spawnParticleGlowPacket(wisp.world, pos, motion / 10D, r, g, b, size * 10F, 40, GlowTexture.Mote, 32)
+        }
       }
       wisp.getMoveHelper.setMoveTo(target.posX, target.posY, target.posZ, 1D)
     } else if (dist2 < getFollowDistance * getFollowDistance) {

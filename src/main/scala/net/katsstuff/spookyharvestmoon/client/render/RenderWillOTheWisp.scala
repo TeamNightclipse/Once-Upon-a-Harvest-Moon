@@ -1,10 +1,13 @@
 package net.katsstuff.spookyharvestmoon.client.render
 
 import org.lwjgl.opengl.GL11
+import org.lwjgl.util.glu.{GLU, Sphere}
 
 import net.katsstuff.spookyharvestmoon.client.helper.RenderHelper
+import net.katsstuff.spookyharvestmoon.client.helper.RenderHelper.sphereId
 import net.katsstuff.spookyharvestmoon.client.model.EmptyModel
 import net.katsstuff.spookyharvestmoon.entity.EntityWillOTheWisp
+import net.katsstuff.spookyharvestmoon.lib.LibMod
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.entity.{RenderLiving, RenderManager}
 import net.minecraft.util.ResourceLocation
@@ -48,5 +51,6 @@ class RenderWillOTheWisp(renderManager: RenderManager)
     GlStateManager.enableLighting()
     GlStateManager.popMatrix()
   }
-  override def getEntityTexture(entity: EntityWillOTheWisp): ResourceLocation = ???
+
+  override def getEntityTexture(entity: EntityWillOTheWisp): ResourceLocation = new ResourceLocation(LibMod.Id, "textures/white.png")
 }

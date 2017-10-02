@@ -11,22 +11,31 @@ import net.katsstuff.spookyharvestmoon.helper.IdState
 import net.katsstuff.spookyharvestmoon.lib.{LibEntityName, LibMod}
 import net.minecraft.block.Block
 import net.minecraft.entity.{Entity, EntityLiving, EnumCreatureType}
+import net.minecraft.item.{Item, ItemBlock}
 import net.minecraft.util.ResourceLocation
 import net.minecraft.world.World
 import net.minecraft.world.biome.Biome
 import net.minecraftforge.common.BiomeDictionary
 import net.minecraftforge.event.RegistryEvent
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.registry.EntityRegistry
 
 object CommonProxy {
 
+  @SubscribeEvent
   def registerItems(event: RegistryEvent.Register[Block]): Unit =
     event.getRegistry.registerAll((new BlockLantern).setRegistryName(LibBlockName.Lantern))
+
+  @SubscribeEvent
+  def registerBlocks(event: RegistryEvent.Register[Item]): Unit =
+    event.getRegistry.registerAll(new ItemBlock(SpookyBlocks.Lantern).setRegistryName(LibBlockName.Lantern))
 }
 case class Egg(primary: Int, secondary: Int)
 class CommonProxy {
 
   def registerRenderers(): Unit = ()
+
+  def bakeRenderModels(): Unit = ()
 
   def registerEntities(): Unit = {
     import BiomeDictionary.{Type => BiomeType}
