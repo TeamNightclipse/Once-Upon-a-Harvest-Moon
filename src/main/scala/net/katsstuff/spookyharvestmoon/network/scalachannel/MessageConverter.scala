@@ -13,10 +13,15 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.text.ITextComponent
 import shapeless._
 
-trait MessageConverter[A] {
+trait MessageConverter[A] { self =>
 
   def toBytes(a: A, buf: ByteBuf): Unit
   def fromBytes(buf: ByteBuf):     A
+
+  def modify[B](from: A => B)(to: B => A): MessageConverter[B] = new MessageConverter[B] {
+    override def toBytes(a: B, buf: ByteBuf): Unit = self.toBytes(to(a), buf)
+    override def fromBytes(buf: ByteBuf):     B    = from(self.fromBytes(buf))
+  }
 }
 object MessageConverter {
 

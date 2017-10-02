@@ -34,6 +34,5 @@ object GlowTexture {
     case _ => None
   }
 
-  implicit val converter: MessageConverter[GlowTexture] =
-    MessageConverter.create(buf => fromId(buf.readInt()).get)((buf, a) => buf.writeInt(idOf(a)))
+  implicit val converter: MessageConverter[GlowTexture] = MessageConverter[Int].modify(fromId(_).get)(idOf)
 }
