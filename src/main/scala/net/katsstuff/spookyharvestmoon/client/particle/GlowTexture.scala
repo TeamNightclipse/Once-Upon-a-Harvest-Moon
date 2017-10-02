@@ -9,6 +9,7 @@
 package net.katsstuff.spookyharvestmoon.client.particle
 
 import net.katsstuff.spookyharvestmoon.client.lib.LibParticleTextures
+import net.katsstuff.spookyharvestmoon.network.scalachannel.MessageConverter
 import net.minecraft.util.ResourceLocation
 
 sealed abstract case class GlowTexture(texture: ResourceLocation)
@@ -20,9 +21,9 @@ object GlowTexture {
 
   def idOf(texture: GlowTexture): Int = texture match {
     case Glint => 0
-    case Glow => 1
-    case Mote => 2
-    case Star => 3
+    case Glow  => 1
+    case Mote  => 2
+    case Star  => 3
   }
 
   def fromId(id: Int): Option[GlowTexture] = id match {
@@ -32,4 +33,7 @@ object GlowTexture {
     case 3 => Some(Star)
     case _ => None
   }
+
+  implicit val converter: MessageConverter[GlowTexture] =
+    MessageConverter.create(buf => fromId(buf.readInt()).get)((buf, a) => buf.writeInt(idOf(a)))
 }

@@ -50,11 +50,31 @@ minecraft {
     replaceIn 'LibMod.scala'
 }
 
+reobf {
+    jar {
+        extraLines += "PK: shapeless net/katsstuff/spookyharvestmoon/shade/shapeless"
+    }
+}
+
+configurations {
+    shade
+    compile.extendsFrom shade
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    shade 'com.chuusai:shapeless_2.11:2.3.2' exclude group: 'org.scala-lang'
+}
+
+jar {
+    configurations.shade.each { dep ->
+        from(project.zipTree(dep)) {
+            exclude 'META-INF', 'META-INF/**'
+        }
+    }
 }
 
 processResources {

@@ -1,24 +1,22 @@
 package net.katsstuff.spookyharvestmoon
 
-import net.katsstuff.spookyharvestmoon.client.particle.{GlowTexture, IGlowParticle, ParticleGlow}
-import net.katsstuff.spookyharvestmoon.lib.{LibEntityName, LibMod}
-import net.minecraft.entity.{Entity, EntityLiving, EnumCreatureType}
-import net.minecraft.util.ResourceLocation
-import net.minecraft.world.biome.Biome
-import net.minecraftforge.common.BiomeDictionary
-import net.minecraftforge.fml.common.registry.EntityRegistry
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 import net.katsstuff.spookyharvestmoon.block.BlockLantern
-import net.katsstuff.spookyharvestmoon.client.particle.ParticleUtil.{counter, random}
+import net.katsstuff.spookyharvestmoon.client.particle.{GlowTexture, IGlowParticle}
 import net.katsstuff.spookyharvestmoon.data.Vector3
 import net.katsstuff.spookyharvestmoon.entity._
 import net.katsstuff.spookyharvestmoon.helper.IdState
+import net.katsstuff.spookyharvestmoon.lib.{LibEntityName, LibMod}
 import net.minecraft.block.Block
-import net.minecraft.client.Minecraft
+import net.minecraft.entity.{Entity, EntityLiving, EnumCreatureType}
+import net.minecraft.util.ResourceLocation
 import net.minecraft.world.World
+import net.minecraft.world.biome.Biome
+import net.minecraftforge.common.BiomeDictionary
 import net.minecraftforge.event.RegistryEvent
+import net.minecraftforge.fml.common.registry.EntityRegistry
 
 object CommonProxy {
 

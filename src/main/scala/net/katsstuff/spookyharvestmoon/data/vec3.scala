@@ -543,16 +543,7 @@ final case class Vector3(@BeanProperty x: Double, @BeanProperty y: Double, @Bean
 
 object Vector3 {
 
-  implicit val vector3Converter: MessageConverter[Vector3] = new MessageConverter[Vector3] {
-    override def toBytes(a: Vector3, buf: ByteBuf): Unit = {
-      buf.writeDouble(a.x)
-      buf.writeDouble(a.y)
-      buf.writeDouble(a.z)
-    }
-
-    override def fromBytes(buf: ByteBuf): Vector3 =
-      Vector3(buf.readDouble(), buf.readDouble(), buf.readDouble())
-  }
+  implicit val vector3Converter: MessageConverter[Vector3] = shapeless.cachedImplicit
 
   private val rand = new Random
 
