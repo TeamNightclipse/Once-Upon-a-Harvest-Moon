@@ -11,5 +11,7 @@ public class SpookyBlocks {
 	public static final Block Lantern = new Block(Material.IRON);
 	@GameRegistry.ObjectHolder(LibBlockName.Hook)
 	public static final Block Hook = new Block(Material.IRON);
+	@GameRegistry.ObjectHolder(LibBlockName.JackOLantern)
+	public static final Block JackOLantern = new Block(Material.WOOD);
 
 }
