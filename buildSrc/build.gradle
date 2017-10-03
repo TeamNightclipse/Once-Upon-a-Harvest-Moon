@@ -1,0 +1,13 @@
+apply plugin: 'scala'
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+    compile group: 'org.scala-lang', name: 'scala-library', version: '2.12.3'
+    compile group: 'net.katsstuff', name: 'typenbt_2.12', version: '0.3'
+    compile group: 'io.circe', name: 'circe-core_2.12', version: '0.8.0'
+    compile group: 'io.circe', name: 'circe-generic_2.12', version: '0.8.0'
+}

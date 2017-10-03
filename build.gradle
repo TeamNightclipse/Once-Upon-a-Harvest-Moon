@@ -1,3 +1,5 @@
+import runresourcegen.Advancements
+
 buildscript {
     repositories {
         jcenter()
@@ -33,7 +35,7 @@ archivesBaseName = "spookyHarvestMoon"
 minecraft {
     version = config.mc_version + "-" + config.forge_version
     if (file('../run1.12').exists()) {
-        runDir = "../run1.11"
+        runDir = "../run1.12"
     } else {
         runDir = "run"
     }
@@ -77,6 +79,12 @@ jar {
     }
 }
 
+sourceSets {
+    main {
+        output.dir("$buildDir/generatedResources/main", builtBy: 'generateResouces')
+    }
+}
+
 processResources {
     // this will ensure that this task is redone when the versions change.
     inputs.property "version", project.version
@@ -96,10 +104,18 @@ processResources {
     }
 }
 
-task incrementBuildNumber(dependsOn: 'reobfJar') << {
-    config.build_number = (config.build_number.toString().toInteger()) + 1
-    configFile.withWriter {
-        config.toProperties().store(it, "")
+task generateResouces {
+    doLast {
+        Advancements.createFiles(file("$buildDir/generatedResources/main"))
+    }
+}
+
+task incrementBuildNumber(dependsOn: 'reobfJar') {
+    doLast {
+        config.build_number = (config.build_number.toString().toInteger()) + 1
+        configFile.withWriter {
+            config.toProperties().store(it, "")
+        }
     }
 }
 
