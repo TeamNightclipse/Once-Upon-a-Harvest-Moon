@@ -12,8 +12,8 @@ import io.circe.Encoder
 
 trait AdvancementResource {
 
-  object Api extends Advancement with Common
-  import Api._
+  object AdvancementApi extends Advancement with Common
+  import AdvancementApi._
 
   private val advancements = ArrayBuffer.empty[AdvancementCore]
 
@@ -38,13 +38,13 @@ trait AdvancementResource {
     advancement
   }
 
-  def fileMap: Map[String, String] =
+  def advancementFileMap: Map[String, String] =
     advancements
       .map(a => s"assets/${a.fileName.domain}/advancements/${a.fileName.path}.json" -> a.asJson.pretty(ResourcePrinter))
       .toMap
 
-  def createFiles(resources: Path): Unit = {
-    val map = fileMap
+  def advancementCreateFiles(resources: Path): Unit = {
+    val map = advancementFileMap
 
     map.foreach {
       case (advPath, content) =>
@@ -54,5 +54,5 @@ trait AdvancementResource {
     }
   }
 
-  def createFiles(resource: File): Unit = createFiles(resource.toPath)
+  def advancementCreateFiles(resource: File): Unit = advancementCreateFiles(resource.toPath)
 }

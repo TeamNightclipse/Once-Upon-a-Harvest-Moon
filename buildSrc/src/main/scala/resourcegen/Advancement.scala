@@ -55,12 +55,12 @@ trait Advancement { self: Advancement with Common =>
   case class Display(
       icon: Icon,
       title: TextOrString,
-      frame: FrameType = FrameType.Task,
+      frame: Option[FrameType] = None,
       background: Option[ResourceId] = None,
       description: TextOrString,
-      showToast: Boolean = true,
-      announceToChat: Boolean = true,
-      hidden: Boolean = false
+      showToast: Option[Boolean] = None,
+      announceToChat: Option[Boolean] = None,
+      hidden: Option[Boolean] = None
   )
 
   case class Icon(item: ResourceId, data: Option[Int] = None)
@@ -88,11 +88,11 @@ trait Advancement { self: Advancement with Common =>
   trait Criteria
 
   case class Item(
-      count: Option[RangeOrSingle] = None,
+      item: Option[ResourceId] = None,
       data: Option[Int] = None,
+      count: Option[RangeOrSingle] = None,
       durability: Option[RangeOrSingle] = None,
       enhancements: Seq[Enhancement] = Nil,
-      item: Option[ResourceId] = None,
       nbt: Option[NBTCompound] = None,
       potion: Option[ResourceId] = None
   )
@@ -132,11 +132,7 @@ trait Advancement { self: Advancement with Common =>
     }
   }
 
-  case class Effect(
-      name: ResourceId,
-      amplifier: Option[RangeOrSingle] = None,
-      duration: Option[RangeOrSingle] = None
-  )
+  case class Effect(name: ResourceId, amplifier: Option[RangeOrSingle] = None, duration: Option[RangeOrSingle] = None)
   object Effect {
     implicit val encoder: Encoder[Effect] = (a: Effect) =>
       Json.obj("amplifier" -> a.amplifier.asJson, "duration" -> a.duration.asJson)
