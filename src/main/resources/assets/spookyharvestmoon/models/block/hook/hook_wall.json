@@ -72,12 +72,12 @@
 		},
 		{
 			"name": "cube",
-			"from": [4.5, 15, 0],
-			"to": [11.5, 16, 0],
+			"from": [5.5, 15, 0],
+			"to": [10.5, 16, 0],
 			"faces": {
 				"north": {"uv": [5, 0, 12, 1], "texture": "#1"},
 				"east": {"uv": [0, 0, 0, 1], "texture": "#1"},
-				"south": {"uv": [5, 0, 12, 1], "texture": "#1"},
+				"south": {"uv": [4, 0, 8, 1], "texture": "#1"},
 				"west": {"uv": [0, 0, 0, 1], "texture": "#1"},
 				"up": {"uv": [0, 0, 7, 0], "texture": "#1"},
 				"down": {"uv": [0, 0, 7, 0], "texture": "#1"}
@@ -88,7 +88,7 @@
 		{
 			"name": "group",
 			"origin": [8, 8, 8],
-			"isOpen": false,
+			"isOpen": true,
 			"display": {
 				"visibility": true,
 				"export": true,
