@@ -8,13 +8,13 @@ import net.katsstuff.spookyharvestmoon.client.particle.{GlowTexture, ParticleUti
 import net.katsstuff.spookyharvestmoon.data.Vector3
 import net.katsstuff.spookyharvestmoon.helper.LogHelper
 import net.katsstuff.spookyharvestmoon.lib.LibEntityName
-import net.katsstuff.spookyharvestmoon.{SpookyConfig, SpookyEffect, SpookyHarvestMoon}
+import net.katsstuff.spookyharvestmoon.{EggInfo, SpookyConfig, SpookyEffect, SpookyHarvestMoon}
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.ai._
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.projectile.EntitySmallFireball
-import net.minecraft.entity.{EnumCreatureAttribute, IEntityLivingData, SharedMonsterAttributes}
+import net.minecraft.entity.{EnumCreatureAttribute, EnumCreatureType, IEntityLivingData, SharedMonsterAttributes}
 import net.minecraft.init.SoundEvents
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.network.datasync.{DataParameter, DataSerializers, EntityDataManager}
@@ -22,7 +22,9 @@ import net.minecraft.pathfinding.PathNodeType
 import net.minecraft.potion.PotionEffect
 import net.minecraft.util.math.{BlockPos, MathHelper}
 import net.minecraft.util.{DamageSource, SoundEvent}
+import net.minecraft.world.biome.Biome
 import net.minecraft.world.{DifficultyInstance, World}
+import net.minecraftforge.common.BiomeDictionary
 import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 
 object EntityWillOTheWisp {
@@ -45,6 +47,16 @@ object EntityWillOTheWisp {
 
   private final val Form: DataParameter[JByte] =
     EntityDataManager.createKey(classOf[EntityWillOTheWisp], DataSerializers.BYTE)
+
+  implicit val info: EntityInfoConfig[EntityWillOTheWisp] = new EntityInfoConfig[EntityWillOTheWisp] {
+    override def create(world: World): EntityWillOTheWisp = new EntityWillOTheWisp(world)
+    override def name:                 String             = LibEntityName.WillOTheWisp
+    override def egg:                  Option[EggInfo]    = Some(EggInfo(0xFFFFFF, 0x000000))
+
+    override def configEntry: SpookyConfig.Spawns.SpawnEntry = SpookyConfig.spawns.willOTheWisp
+    override def creatureType = EnumCreatureType.MONSTER
+    override def biomes: Seq[Biome] = SpawnInfo.biomesForTypes(BiomeDictionary.Type.SWAMP)
+  }
 }
 class EntityWillOTheWisp(_world: World) extends EntityFlyingMob(_world) {
   setSize(0.5F, 0.5F)

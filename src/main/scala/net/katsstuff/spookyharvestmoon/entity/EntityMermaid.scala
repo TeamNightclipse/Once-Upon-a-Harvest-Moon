@@ -1,18 +1,29 @@
 package net.katsstuff.spookyharvestmoon.entity
 
-import net.katsstuff.spookyharvestmoon.SpookyConfig
+import net.katsstuff.spookyharvestmoon.{EggInfo, SpookyConfig}
 import net.katsstuff.spookyharvestmoon.lib.LibEntityName
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.ai.EntityMoveHelper
-import net.minecraft.entity.{MoverType, SharedMonsterAttributes}
+import net.minecraft.entity.{EnumCreatureType, MoverType, SharedMonsterAttributes}
 import net.minecraft.network.datasync.{DataSerializers, EntityDataManager}
 import net.minecraft.pathfinding.{PathNavigate, PathNavigateSwimmer}
 import net.minecraft.util.math.{BlockPos, MathHelper}
 import net.minecraft.world.World
+import net.minecraft.world.biome.Biome
+import net.minecraftforge.common.BiomeDictionary
 
 object EntityMermaid {
   private val Moving = EntityDataManager.createKey(classOf[EntityMermaid], DataSerializers.BOOLEAN)
+  implicit val info: EntityInfoConfig[EntityMermaid] = new EntityInfoConfig[EntityMermaid] {
+    override def create(world: World): EntityMermaid   = new EntityMermaid(world)
+    override def name:                 String          = LibEntityName.Mermaid
+    override def egg:                  Option[EggInfo] = Some(EggInfo(0xFFFFFF, 0x000000))
+
+    override def configEntry: SpookyConfig.Spawns.SpawnEntry = SpookyConfig.spawns.mermaid
+    override def creatureType = EnumCreatureType.MONSTER
+    override def biomes: Seq[Biome] = SpawnInfo.biomesForTypes(BiomeDictionary.Type.OCEAN)
+  }
 }
 class EntityMermaid(_world: World) extends EntitySpookySpawnedMob(_world) {
   moveHelper = new SwimmingMoveHelper(this)
@@ -24,8 +35,8 @@ class EntityMermaid(_world: World) extends EntitySpookySpawnedMob(_world) {
     dataManager.register(EntityMermaid.Moving, Boolean.box(false))
   }
 
-  def moving: Boolean = this.dataManager.get(EntityMermaid.Moving)
-  def moving_=(moving: Boolean): Unit = dataManager.set(EntityMermaid.Moving, Boolean.box(moving))
+  def moving:                    Boolean = this.dataManager.get(EntityMermaid.Moving)
+  def moving_=(moving: Boolean): Unit    = dataManager.set(EntityMermaid.Moving, Boolean.box(moving))
 
   override def getBlockPathWeight(pos: BlockPos): Float =
     if (world.getBlockState(pos).getMaterial == Material.WATER) 10.0F + world.getLightBrightness(pos) - 0.5F

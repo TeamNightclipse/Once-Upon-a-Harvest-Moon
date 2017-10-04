@@ -6,14 +6,16 @@ import scala.collection.JavaConverters._
 
 import com.google.common.base.Predicate
 
-import net.katsstuff.spookyharvestmoon.LibBlockName
+import net.katsstuff.spookyharvestmoon.{LibBlockName, SpookyBlocks}
 import net.minecraft.block.Block
 import net.minecraft.block.material.Material
 import net.minecraft.block.properties.PropertyDirection
 import net.minecraft.block.state.{BlockFaceShape, BlockStateContainer, IBlockState}
 import net.minecraft.entity.EntityLivingBase
+import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.item.Item
 import net.minecraft.util.math.{AxisAlignedBB, BlockPos}
-import net.minecraft.util.{BlockRenderLayer, EnumFacing, Mirror, Rotation}
+import net.minecraft.util.{BlockRenderLayer, EnumFacing, EnumHand, Mirror, Rotation}
 import net.minecraft.world.{IBlockAccess, World}
 import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 
@@ -27,9 +29,6 @@ object BlockHook {
 class BlockHook extends BlockSpookyBase(LibBlockName.Hook, Material.IRON) {
   setDefaultState(blockState.getBaseState.withProperty(BlockHook.Facing, EnumFacing.NORTH))
   setHardness(0.5F)
-
-  override def isReplaceable(worldIn: IBlockAccess, pos: BlockPos): Boolean =
-    true
 
   override def getBoundingBox(state: IBlockState, source: IBlockAccess, pos: BlockPos): AxisAlignedBB =
     state.getValue(BlockHook.Facing) match {
@@ -60,10 +59,27 @@ class BlockHook extends BlockSpookyBase(LibBlockName.Hook, Material.IRON) {
   override def canPlaceBlockAt(worldIn: World, pos: BlockPos): Boolean =
     BlockHook.Facing.getAllowedValues.asScala.exists(canPlaceBlockOnSide(worldIn, pos, _))
 
-  /**
-    * Called by ItemBlocks just before a block is actually set in the world, to allow for adjustments to the
-    * IBlockstate
-    */
+  override def onBlockActivated(
+      world: World,
+      pos: BlockPos,
+      state: IBlockState,
+      player: EntityPlayer,
+      hand: EnumHand,
+      facing: EnumFacing,
+      hitX: Float,
+      hitY: Float,
+      hitZ: Float
+  ): Boolean = {
+    val stack = player.getHeldItem(hand)
+    if (stack.getItem == Item.getItemFromBlock(SpookyBlocks.Lantern)) {
+      world.setBlockState(
+        pos,
+        SpookyBlocks.Lantern.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, stack.getMetadata, player, hand)
+      )
+      true
+    } else false
+  }
+
   override def getStateForPlacement(
       worldIn: World,
       pos: BlockPos,

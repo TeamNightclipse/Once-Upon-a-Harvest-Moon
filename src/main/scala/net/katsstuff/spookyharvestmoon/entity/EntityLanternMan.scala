@@ -1,18 +1,31 @@
 package net.katsstuff.spookyharvestmoon.entity
 
 import net.katsstuff.spookyharvestmoon.lib.LibEntityName
-import net.katsstuff.spookyharvestmoon.{SpookyBlocks, SpookyConfig, SpookyEffect}
+import net.katsstuff.spookyharvestmoon.{EggInfo, SpookyBlocks, SpookyConfig, SpookyEffect}
 import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.ai._
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.{Entity, EntityLivingBase, EnumCreatureAttribute, SharedMonsterAttributes}
+import net.minecraft.entity.{Entity, EntityLivingBase, EnumCreatureAttribute, EnumCreatureType, SharedMonsterAttributes}
 import net.minecraft.init.{Blocks, SoundEvents}
 import net.minecraft.item.ItemStack
 import net.minecraft.potion.PotionEffect
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.{DamageSource, SoundEvent}
 import net.minecraft.world.World
+import net.minecraft.world.biome.Biome
+import net.minecraftforge.common.BiomeDictionary
 
+object EntityLanternMan {
+  implicit val info: EntityInfoConfig[EntityLanternMan] = new EntityInfoConfig[EntityLanternMan] {
+    override def create(world: World): EntityLanternMan = new EntityLanternMan(world)
+    override def name:                 String             = LibEntityName.LanternMan
+    override def egg:                  Option[EggInfo]    = Some(EggInfo(0xFFFFFF, 0x000000))
+
+    override def configEntry: SpookyConfig.Spawns.SpawnEntry = SpookyConfig.spawns.lanternMan
+    override def creatureType = EnumCreatureType.MONSTER
+    override def biomes: Seq[Biome] = SpawnInfo.biomesForTypes(BiomeDictionary.Type.SWAMP)
+  }
+}
 class EntityLanternMan(_world: World) extends EntitySpookySpawnedMob(_world) {
   setHeldItem(getActiveHand, new ItemStack(SpookyBlocks.Lantern))
 

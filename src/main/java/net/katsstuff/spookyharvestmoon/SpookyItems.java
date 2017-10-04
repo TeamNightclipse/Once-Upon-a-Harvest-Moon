@@ -9,4 +9,7 @@ public class SpookyItems {
 	@GameRegistry.ObjectHolder(LibItemName.Note)
 	public static final Item Note = new Item();
 
+	@GameRegistry.ObjectHolder(LibItemName.WispyFire)
+	public static final Item WispyFire = new Item();
+
 }

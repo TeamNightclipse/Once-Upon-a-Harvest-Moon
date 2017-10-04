@@ -32,6 +32,7 @@ object ClientProxy {
     registerItemBlock(Hook)
     registerItemBlock(JackOLantern)
     ItemNote.Ids.foreach(i => registerItem(Note, i, i => new ResourceLocation(i.getRegistryName + s"_$i")))
+    registerItem(WispyFire)
   }
 
   private def registerItemBlock(block: Block, damage: Int = 0): Unit =
