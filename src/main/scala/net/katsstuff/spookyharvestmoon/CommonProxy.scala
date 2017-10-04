@@ -46,12 +46,13 @@ object CommonProxy {
   @SubscribeEvent
   def registerEntities(event: RegistryEvent.Register[EntityEntry]): Unit = {
 
-    def registerEntity[A <: Entity](implicit classTag: ClassTag[A], info: EntityInfo[A]) = {
+    def registerEntity[A <: Entity](implicit classTag: ClassTag[A], info: EntityInfo[A]): IdState[EntityEntry] = {
       val clazz = classTag.runtimeClass.asInstanceOf[Class[A]]
       IdState { id =>
         (id + 1, {
           val builder = EntityEntryBuilder
             .create[A]
+            .name(info.name)
             .id(info.name, id)
             .entity(clazz)
             .factory(world => info.create(world))

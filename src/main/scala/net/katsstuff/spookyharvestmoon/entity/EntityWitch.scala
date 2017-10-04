@@ -1,7 +1,7 @@
 package net.katsstuff.spookyharvestmoon.entity
 
 import net.katsstuff.spookyharvestmoon.lib.LibEntityName
-import net.minecraft.entity.ai.{EntityAIAttackRanged, EntityAIHurtByTarget, EntityAILookIdle, EntityAINearestAttackableTarget, EntityAISwimming, EntityAIWanderAvoidWater, EntityAIWatchClosest}
+import net.minecraft.entity.ai._
 import net.minecraft.entity.player.{EntityPlayer, EntityPlayerMP}
 import net.minecraft.entity.{EntityLiving, EntityLivingBase, IRangedAttackMob, SharedMonsterAttributes}
 import net.minecraft.nbt.NBTTagCompound
@@ -9,10 +9,18 @@ import net.minecraft.pathfinding.PathNavigateGround
 import net.minecraft.potion.PotionEffect
 import net.minecraft.world.{BossInfo, BossInfoServer, World}
 
+object EntityWitch {
+  implicit val info: EntityInfo[EntityWitch] = new EntityInfo[EntityWitch] {
+    override def name:                 String      = LibEntityName.Witch
+    override def create(world: World): EntityWitch = new EntityWitch(world)
+  }
+}
 class EntityWitch(_world: World) extends EntitySpookyBaseMob(_world) with IRangedAttackMob {
 
-  private val bossInfo = new BossInfoServer(getDisplayName, BossInfo.Color.RED,
-    BossInfo.Overlay.NOTCHED_6).setDarkenSky(true).setCreateFog(true).asInstanceOf[BossInfoServer]
+  private val bossInfo = new BossInfoServer(getDisplayName, BossInfo.Color.RED, BossInfo.Overlay.NOTCHED_6)
+    .setDarkenSky(true)
+    .setCreateFog(true)
+    .asInstanceOf[BossInfoServer]
 
   setHealth(getMaxHealth)
   isImmuneToFire = true
@@ -37,7 +45,7 @@ class EntityWitch(_world: World) extends EntitySpookyBaseMob(_world) with IRange
     getEntityAttribute(SharedMonsterAttributes.ARMOR).setBaseValue(2D)
   }
 
-  override def setSwingingArms(swingingArms: Boolean): Unit = ???
+  override def setSwingingArms(swingingArms: Boolean):                                        Unit = ???
   override def attackEntityWithRangedAttack(target: EntityLivingBase, distanceFactor: Float): Unit = ???
 
   override def readEntityFromNBT(compound: NBTTagCompound): Unit = {
@@ -69,11 +77,10 @@ class EntityWitch(_world: World) extends EntitySpookyBaseMob(_world) with IRange
 
   override def fall(distance: Float, damageMultiplier: Float): Unit = {}
 
-  override def addPotionEffect(effect: PotionEffect): Unit = {
-    if(!effect.getPotion.isBadEffect) {
+  override def addPotionEffect(effect: PotionEffect): Unit =
+    if (!effect.getPotion.isBadEffect) {
       super.addPotionEffect(effect)
     }
-  }
 
   override def isNonBoss = false
 

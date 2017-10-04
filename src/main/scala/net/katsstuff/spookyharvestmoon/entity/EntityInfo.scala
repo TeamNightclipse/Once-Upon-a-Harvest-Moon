@@ -20,7 +20,7 @@ trait EntityInfoConfig[A] extends EntityInfo[A] {
   def creatureType: EnumCreatureType
   def biomes:       Seq[Biome]
 
-  def spawn: Option[SpawnInfo] =
+  override def spawn: Option[SpawnInfo] =
     Some(
       SpawnInfo(
         creatureType,
@@ -35,12 +35,8 @@ trait EntityInfoConfig[A] extends EntityInfo[A] {
 case class TrackingInfo(range: Int = 64, updateFrequency: Int = 1, sendVelocityUpdates: Boolean = true)
 case class SpawnInfo(creatureType: EnumCreatureType, weight: Int, min: Int, max: Int, biomes: Seq[Biome])
 object SpawnInfo {
-  def apply(
-      creatureType: EnumCreatureType,
-      weight: Int,
-      min: Int,
-      max: Int,
-      biomes: Seq[BiomeDictionary.Type]
+  def apply(creatureType: EnumCreatureType, weight: Int, min: Int, max: Int, biomes: Seq[BiomeDictionary.Type])(
+      implicit dummyImplicit: DummyImplicit
   ): SpawnInfo = SpawnInfo(creatureType, weight, min, max, biomesForTypes(biomes: _*))
 
   def biomesForTypes(types: BiomeDictionary.Type*): Seq[Biome] =

@@ -2,7 +2,7 @@
   "forge_marker": 1,
   "defaults": {
     "model": "spookyharvestmoon:hook/hook_wall",
-    "uvlock": true
+    "uvlock": false
   },
   "variants": {
     "normal": [
@@ -18,15 +18,15 @@
         "model": "spookyharvestmoon:hook/hook_hanging"
       },
       "north": {
+        "y": 270
       },
       "east": {
-        "y": 90
-      },
-      "south": {
         "y": 180
       },
+      "south": {
+        "y": 90
+      },
       "west": {
-        "y": 270
       }
     }
   }

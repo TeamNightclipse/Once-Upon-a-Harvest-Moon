@@ -6,6 +6,7 @@ import scala.collection.JavaConverters._
 
 import com.google.common.base.Predicate
 
+import net.katsstuff.spookyharvestmoon.helper.LogHelper
 import net.katsstuff.spookyharvestmoon.{LibBlockName, SpookyBlocks}
 import net.minecraft.block.Block
 import net.minecraft.block.material.Material
@@ -30,15 +31,16 @@ class BlockHook extends BlockSpookyBase(LibBlockName.Hook, Material.IRON) {
   setDefaultState(blockState.getBaseState.withProperty(BlockHook.Facing, EnumFacing.NORTH))
   setHardness(0.5F)
 
-  override def getBoundingBox(state: IBlockState, source: IBlockAccess, pos: BlockPos): AxisAlignedBB =
+  override def getBoundingBox(state: IBlockState, source: IBlockAccess, pos: BlockPos): AxisAlignedBB = {
     state.getValue(BlockHook.Facing) match {
       case EnumFacing.EAST  => BlockHook.TODOAABB
       case EnumFacing.WEST  => BlockHook.TODOAABB
       case EnumFacing.SOUTH => BlockHook.TODOAABB
       case EnumFacing.NORTH => BlockHook.TODOAABB
-      case EnumFacing.DOWN  => BlockHook.TODOAABB
+      case EnumFacing.DOWN  => new AxisAlignedBB(0.0625D * 7, 0.0625D * 11, 0.0625D * 6, 0.0625D * 9, 1D, 0.0625D * 10)
       case _                => BlockHook.TODOAABB
     }
+  }
 
   @Nullable
   override def getCollisionBoundingBox(blockState: IBlockState, worldIn: IBlockAccess, pos: BlockPos): AxisAlignedBB =
@@ -52,8 +54,10 @@ class BlockHook extends BlockSpookyBase(LibBlockName.Hook, Material.IRON) {
     val placedOn = pos.offset(side.getOpposite)
     val state    = worldIn.getBlockState(placedOn)
     val flag     = Block.isExceptBlockForAttachWithPiston(state.getBlock)
-    !flag && side.getAxis.isHorizontal &&
-    (state.getBlockFaceShape(worldIn, placedOn, side) == BlockFaceShape.SOLID)
+    val shape = state.getBlockFaceShape(worldIn, placedOn, side)
+    LogHelper.info(shape)
+    val allowed = Set(BlockFaceShape.SOLID, BlockFaceShape.CENTER, BlockFaceShape.CENTER_BIG)
+    !flag && side != EnumFacing.UP && allowed.contains(shape)
   }
 
   override def canPlaceBlockAt(worldIn: World, pos: BlockPos): Boolean =
@@ -74,7 +78,17 @@ class BlockHook extends BlockSpookyBase(LibBlockName.Hook, Material.IRON) {
     if (stack.getItem == Item.getItemFromBlock(SpookyBlocks.Lantern)) {
       world.setBlockState(
         pos,
-        SpookyBlocks.Lantern.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, stack.getMetadata, player, hand)
+        SpookyBlocks.Lantern.getStateForPlacement(
+          world,
+          pos,
+          state.getValue(BlockHook.Facing),
+          hitX,
+          hitY,
+          hitZ,
+          stack.getMetadata,
+          player,
+          hand
+        )
       )
       true
     } else false

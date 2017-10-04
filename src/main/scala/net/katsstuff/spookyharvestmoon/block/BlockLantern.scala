@@ -6,6 +6,9 @@ import javax.annotation.Nullable
 
 import scala.collection.JavaConverters._
 
+import net.katsstuff.spookyharvestmoon.client.particle.{GlowTexture, ParticleUtil}
+import net.katsstuff.spookyharvestmoon.data.Vector3
+import net.katsstuff.spookyharvestmoon.helper.LogHelper
 import net.katsstuff.spookyharvestmoon.{LibBlockName, SpookyBlocks}
 import net.minecraft.block.material.Material
 import net.minecraft.block.properties.{PropertyBool, PropertyDirection}
@@ -14,7 +17,7 @@ import net.minecraft.block.{Block, SoundType}
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.{Item, ItemStack}
-import net.minecraft.util.math.{AxisAlignedBB, BlockPos}
+import net.minecraft.util.math.{AxisAlignedBB, BlockPos, Vec3d}
 import net.minecraft.util.{BlockRenderLayer, EnumFacing, EnumHand, EnumParticleTypes, Mirror, NonNullList, Rotation}
 import net.minecraft.world.{IBlockAccess, World}
 import net.minecraftforge.fml.relauncher.{Side, SideOnly}
@@ -36,19 +39,28 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
   setSoundType(SoundType.METAL)
   setHardness(1F)
 
-  override def getBoundingBox(state: IBlockState, source: IBlockAccess, pos: BlockPos): AxisAlignedBB =
+  override def getBoundingBox(state: IBlockState, source: IBlockAccess, pos: BlockPos): AxisAlignedBB = {
     state.getValue(BlockLantern.Facing) match {
       case EnumFacing.EAST  => BlockLantern.TODOAABB
       case EnumFacing.WEST  => BlockLantern.TODOAABB
       case EnumFacing.SOUTH => BlockLantern.TODOAABB
       case EnumFacing.NORTH => BlockLantern.TODOAABB
-      case EnumFacing.UP    => BlockLantern.TODOAABB
-      case EnumFacing.DOWN  => BlockLantern.TODOAABB
+      case EnumFacing.DOWN  => new AxisAlignedBB(0.0625D * 4, 0D, 0.0625D * 5, 0.0625D * 12, 0.0625D * 12, 0.0625D * 11)
+      case EnumFacing.UP    => new AxisAlignedBB(0.0625D * 4, 0D, 0.0625D * 5, 0.0625D * 12, 0.0625D * 12, 0.0625D * 11)
     }
+  }
 
   @Nullable
-  override def getCollisionBoundingBox(blockState: IBlockState, worldIn: IBlockAccess, pos: BlockPos): AxisAlignedBB =
-    Block.NULL_AABB
+  override def getCollisionBoundingBox(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): AxisAlignedBB = {
+    state.getValue(BlockLantern.Facing) match {
+      case EnumFacing.EAST  => BlockLantern.TODOAABB
+      case EnumFacing.WEST  => BlockLantern.TODOAABB
+      case EnumFacing.SOUTH => BlockLantern.TODOAABB
+      case EnumFacing.NORTH => BlockLantern.TODOAABB
+      case EnumFacing.DOWN  => new AxisAlignedBB(0.0625D * 4, 0D, 0.0625D * 5, 0.0625D * 12, 0.0625D * 12, 0.0625D * 11)
+      case EnumFacing.UP    => new AxisAlignedBB(0.0625D * 4, 0D, 0.0625D * 5, 0.0625D * 12, 0.0625D * 12, 0.0625D * 11)
+    }
+  }
 
   override def isOpaqueCube(state: IBlockState): Boolean = false
 
@@ -88,8 +100,10 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
       hitZ: Float,
       meta: Int,
       placer: EntityLivingBase
-  ): IBlockState =
-    if (canPlaceAt(worldIn, pos, facing, existingBlock = false))
+  ): IBlockState = {
+    if (worldIn.getBlockState(pos).getBlock == SpookyBlocks.Hook)
+      getDefaultState.withProperty(BlockLantern.Facing, facing)
+    else if (canPlaceAt(worldIn, pos, facing, existingBlock = false))
       getDefaultState.withProperty(BlockLantern.Facing, facing)
     else {
       EnumFacing.Plane.HORIZONTAL.asScala
@@ -97,6 +111,7 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
         .map(getDefaultState.withProperty(BlockLantern.Facing, _))
         .getOrElse(getDefaultState)
     }
+  }
 
   override def onBlockAdded(worldIn: World, pos: BlockPos, state: IBlockState): Unit = checkAndDrop(worldIn, pos, state)
 
@@ -169,21 +184,18 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
     if (state.getValue(BlockLantern.Light)) {
       val facing  = state.getValue(BlockLantern.Facing)
       val x       = pos.getX + 0.5D
-      val y       = pos.getY + 0.7D
+      val y       = pos.getY + 0.3D
       val z       = pos.getZ + 0.5D
       val vOffset = 0.22D
       val hOffset = 0.27D
-      //TODO: Replace with glow particles
       if (facing.getAxis.isHorizontal) {
         val placedOn = facing.getOpposite
         val px       = x + hOffset * placedOn.getFrontOffsetX
         val py       = y + vOffset
         val pz       = z + hOffset * placedOn.getFrontOffsetX
-        worldIn.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, px, py, pz, 0D, 0D, 0D)
-        worldIn.spawnParticle(EnumParticleTypes.FLAME, px, py, pz, 0D, 0D, 0D)
+        ParticleUtil.spawnParticleGlow(worldIn, Vector3(px, py, pz), Vector3(0D, 0.01D, 0D), 1F, 0.8F, 0F, 1.2F, 40, GlowTexture.Mote)
       } else {
-        worldIn.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, x, y, z, 0.0D, 0.0D, 0.0D)
-        worldIn.spawnParticle(EnumParticleTypes.FLAME, x, y, z, 0.0D, 0.0D, 0.0D)
+        ParticleUtil.spawnParticleGlow(worldIn, Vector3(x, y, z), Vector3(0D, 0.01D, 0D), 1F, 0.8F, 0F, 1.2F, 40, GlowTexture.Mote)
       }
     }
   }
@@ -200,7 +212,9 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
       .withProperty(BlockLantern.Light, Boolean.box((meta & 8) > 0))
 
   @SideOnly(Side.CLIENT)
-  override def getBlockLayer = BlockRenderLayer.CUTOUT
+  override def getBlockLayer = BlockRenderLayer.TRANSLUCENT
+
+  shouldRender
 
   override def getMetaFromState(state: IBlockState): Int = {
     val i = state.getValue(BlockLantern.Facing).getIndex
@@ -215,7 +229,8 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
   override def withMirror(state: IBlockState, mirrorIn: Mirror): IBlockState =
     state.withRotation(mirrorIn.toRotation(state.getValue(BlockLantern.Facing)))
 
-  override protected def createBlockState: BlockStateContainer = new BlockStateContainer(this, BlockLantern.Facing, BlockLantern.Light)
+  override protected def createBlockState: BlockStateContainer =
+    new BlockStateContainer(this, BlockLantern.Facing, BlockLantern.Light)
 
   override def getBlockFaceShape(worldIn: IBlockAccess, state: IBlockState, pos: BlockPos, face: EnumFacing) =
     BlockFaceShape.UNDEFINED

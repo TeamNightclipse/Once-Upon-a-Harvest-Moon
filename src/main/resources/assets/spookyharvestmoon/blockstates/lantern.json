@@ -2,7 +2,7 @@
   "forge_marker": 1,
   "defaults": {
     "model": "spookyharvestmoon:lantern/lantern_standing",
-    "uvlock": true
+    "uvlock": false
   },
   "variants": {
     "normal": [
@@ -11,6 +11,9 @@
     ],
     "inventory": [
       {
+        "textures": {
+          "1": "spookyharvestmoon:blocks/lantern"
+        }
       }
     ],
     "light": {
@@ -34,19 +37,19 @@
         "model": "spookyharvestmoon:lantern/lantern_hanging"
       },
       "north": {
-        "model": "spookyharvestmoon:lantern/lantern_wall"
+        "model": "spookyharvestmoon:lantern/lantern_wall",
+        "y": 270
       },
       "east": {
         "model": "spookyharvestmoon:lantern/lantern_wall",
-        "y": 90
+        "y": 180
       },
       "south": {
         "model": "spookyharvestmoon:lantern/lantern_wall",
-        "y": 180
+        "y": 90
       },
       "west": {
-        "model": "spookyharvestmoon:lantern/lantern_wall",
-        "y": 270
+        "model": "spookyharvestmoon:lantern/lantern_wall"
       }
     }
   }
