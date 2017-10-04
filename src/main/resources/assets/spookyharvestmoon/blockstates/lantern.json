@@ -1,9 +1,53 @@
 {
+  "forge_marker": 1,
+  "defaults": {
+    "model": "spookyharvestmoon:lantern/lantern_standing",
+    "uvlock": true
+  },
   "variants": {
-	"facing=up": { "model": "lantern" },
-	"facing=east": { "model": "lantern_wall" },
-	"facing=south": { "model": "lantern_wall", "y": 90 },
-	"facing=west": { "model": "lantern_wall", "y": 180 },
-	"facing=north": { "model": "lantern_wall", "y": 270 }
+    "normal": [
+      {
+      }
+    ],
+    "inventory": [
+      {
+      }
+    ],
+    "light": {
+      "true": {
+        "textures": {
+          "1": "spookyharvestmoon:blocks/lantern",
+          "particle": "spookyharvestmoon:blocks/lantern"
+        }
+      },
+      "false": {
+        "textures": {
+          "1": "spookyharvestmoon:blocks/lantern_off",
+          "particle": "spookyharvestmoon:blocks/lantern_off"
+        }
+      }
+    },
+    "facing": {
+      "up": {
+      },
+      "down": {
+        "model": "spookyharvestmoon:lantern/lantern_hanging"
+      },
+      "north": {
+        "model": "spookyharvestmoon:lantern/lantern_wall"
+      },
+      "east": {
+        "model": "spookyharvestmoon:lantern/lantern_wall",
+        "y": 90
+      },
+      "south": {
+        "model": "spookyharvestmoon:lantern/lantern_wall",
+        "y": 180
+      },
+      "west": {
+        "model": "spookyharvestmoon:lantern/lantern_wall",
+        "y": 270
+      }
+    }
   }
 }
