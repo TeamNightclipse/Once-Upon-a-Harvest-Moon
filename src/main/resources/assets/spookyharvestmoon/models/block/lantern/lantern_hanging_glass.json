@@ -1,0 +1,65 @@
+{
+	"credit": "Made with Blockbench, a free, modern block model editor by JannisX11",
+	"textures": {
+		"0": "spookyharvestmoon:blocks/lantern",
+		"particle": "spookyharvestmoon:blocks/lantern"
+	},
+	"elements": [
+		{
+			"name": "cube",
+			"from": [6.5, 3, 6.5],
+			"to": [9.5, 7, 9.5],
+			"faces": {
+				"north": {"uv": [0, 0, 3, 4], "texture": "#0"},
+				"east": {"uv": [0, 0, 3, 4], "texture": "#0"},
+				"south": {"uv": [0, 0, 3, 4], "texture": "#0"},
+				"west": {"uv": [0, 0, 3, 4], "texture": "#0"},
+				"up": {"uv": [0, 0, 3, 3], "texture": "#0"},
+				"down": {"uv": [0, 0, 3, 3], "texture": "#0"}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "group",
+			"origin": [8, 8, 8],
+			"isOpen": true,
+			"display": {
+				"visibility": true,
+				"export": true,
+				"autouv": true
+			},
+			"children": [0]
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"scale": [0.9, 0.9, 0.9],
+			"rotation": [67, 0, 0],
+			"translation": [0, -3, -3]
+		},
+		"thirdperson_lefthand": {
+			"scale": [0.9, 0.9, 0.9],
+			"rotation": [67, 0, 0],
+			"translation": [0, -3, -3]
+		},
+		"firstperson_righthand": {"scale": [1, 1, 1]},
+		"firstperson_lefthand": {"scale": [1, 1, 1]},
+		"head": {
+			"scale": [1, 1, 1],
+			"translation": [0, 15, 0],
+			"rotation": [0, 0, 0]
+		},
+		"ground": {"scale": [1, 1, 1]},
+		"fixed": {
+			"scale": [1, 1, 1],
+			"rotation": [0, 0, 0],
+			"translation": [0, 2, 0]
+		},
+		"gui": {
+			"scale": [1, 1, 1],
+			"translation": [0, 2, 0],
+			"rotation": [10, 31, 0]
+		}
+	}
+}

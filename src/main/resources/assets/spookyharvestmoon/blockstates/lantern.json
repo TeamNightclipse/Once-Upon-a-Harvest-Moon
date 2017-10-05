@@ -1,56 +1,117 @@
 {
   "forge_marker": 1,
-  "defaults": {
-    "model": "spookyharvestmoon:lantern/lantern_standing",
+  "defaults": {  
+    "custom": { "base": "spookyharvestmoon:lantern#lantern_standing", "Cutout": "spookyharvestmoon:lantern#lantern_standing", "Translucent": "spookyharvestmoon:lantern#lantern_standing_glass",
+		"display": {
+			"thirdperson_righthand": {
+				"scale": [0.9, 0.9, 0.9],
+				"rotation": [67, 0, 0],
+				"translation": [0, -3, -3]
+			},
+			"thirdperson_lefthand": {
+				"scale": [0.9, 0.9, 0.9],
+				"rotation": [67, 0, 0],
+				"translation": [0, -3, -3]
+			},
+			"firstperson_righthand": {"scale": [1, 1, 1]},
+			"firstperson_lefthand": {"scale": [1, 1, 1]},
+			"head": {
+				"scale": [1, 1, 1],
+				"translation": [0, 15, 0],
+				"rotation": [0, 0, 0]
+			},
+			"ground": {"scale": [1, 1, 1]},
+			"fixed": {
+				"scale": [1, 1, 1],
+				"rotation": [0, 0, 0],
+				"translation": [0, 2, 0]
+			},
+			"gui": {
+				"scale": [1, 1, 1],
+				"translation": [0, 2, 0],
+				"rotation": [10, 31, 0]
+			}
+		}
+	},
+    "model": "forge:multi-layer",
     "uvlock": false
   },
   "variants": {
-    "normal": [
-      {
-      }
-    ],
-    "inventory": [
-      {
-        "textures": {
-          "1": "spookyharvestmoon:blocks/lantern"
-        }
-      }
-    ],
+	"inventory": [{
+		"custom": { "base": "spookyharvestmoon:lantern#lantern_standing", "Cutout": "spookyharvestmoon:lantern#lantern_standing", "Translucent": "spookyharvestmoon:lantern#lantern_standing_glass" }
+    }],
     "light": {
       "true": {
-        "textures": {
-          "1": "spookyharvestmoon:blocks/lantern",
-          "particle": "spookyharvestmoon:blocks/lantern"
-        }
       },
       "false": {
-        "textures": {
-          "1": "spookyharvestmoon:blocks/lantern_off",
-          "particle": "spookyharvestmoon:blocks/lantern_off"
-        }
       }
     },
     "facing": {
       "up": {
       },
       "down": {
-        "model": "spookyharvestmoon:lantern/lantern_hanging"
+		"custom": { 
+			"base": "spookyharvestmoon:lantern#lantern_hanging", 
+			"Cutout": "spookyharvestmoon:lantern#lantern_hanging", 
+			"Translucent": "spookyharvestmoon:lantern#lantern_hanging_glass" 
+		}
       },
       "north": {
-        "model": "spookyharvestmoon:lantern/lantern_wall",
-        "y": 270
-      },
-      "east": {
-        "model": "spookyharvestmoon:lantern/lantern_wall",
+		"custom": { 
+			"base": "spookyharvestmoon:lantern#lantern_wall", 
+			"Cutout": "spookyharvestmoon:lantern#lantern_wall", 
+			"Translucent": "spookyharvestmoon:lantern#lantern_wall_glass" 
+		},
         "y": 180
       },
+      "east": {
+		"custom": { 
+			"base": "spookyharvestmoon:lantern#lantern_wall", 
+			"Cutout": "spookyharvestmoon:lantern#lantern_wall", 
+			"Translucent": "spookyharvestmoon:lantern#lantern_wall_glass" 
+		},
+        "y": 270
+      },
       "south": {
-        "model": "spookyharvestmoon:lantern/lantern_wall",
-        "y": 90
+		"custom": { 
+			"base": "spookyharvestmoon:lantern#lantern_wall", 
+			"Cutout": "spookyharvestmoon:lantern#lantern_wall", 
+			"Translucent": "spookyharvestmoon:lantern#lantern_wall_glass" 
+		},
+        "y": 0
       },
       "west": {
-        "model": "spookyharvestmoon:lantern/lantern_wall"
+	    "custom": { 
+			"base": "spookyharvestmoon:lantern#lantern_wall",
+			"Cutout": "spookyharvestmoon:lantern#lantern_wall", 
+			"Translucent": "spookyharvestmoon:lantern#lantern_wall_glass" 
+		},
+		"y": 90
       }
-    }
+    },
+	
+	"lantern_standing": [{
+		"model": "spookyharvestmoon:lantern/lantern_standing"
+	}],
+	
+	"lantern_standing_glass": [{
+		"model": "spookyharvestmoon:lantern/lantern_standing_glass"
+	}],
+	
+	"lantern_hanging": [{
+		"model": "spookyharvestmoon:lantern/lantern_hanging"
+	}],
+	
+	"lantern_hanging_glass": [{
+		"model": "spookyharvestmoon:lantern/lantern_hanging_glass"
+	}],
+	
+	"lantern_wall": [{
+		"model": "spookyharvestmoon:lantern/lantern_wall"
+	}],
+	
+	"lantern_wall_glass": [{
+		"model": "spookyharvestmoon:lantern/lantern_wall_glass"
+	}]
   }
 }

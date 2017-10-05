@@ -212,9 +212,10 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
       .withProperty(BlockLantern.Light, Boolean.box((meta & 8) > 0))
 
   @SideOnly(Side.CLIENT)
-  override def getBlockLayer = BlockRenderLayer.TRANSLUCENT
+  override def getBlockLayer = BlockRenderLayer.CUTOUT
 
-  shouldRender
+  override def canRenderInLayer(state: IBlockState, layer: BlockRenderLayer): Boolean =
+    layer == BlockRenderLayer.CUTOUT || layer == BlockRenderLayer.TRANSLUCENT
 
   override def getMetaFromState(state: IBlockState): Int = {
     val i = state.getValue(BlockLantern.Facing).getIndex
