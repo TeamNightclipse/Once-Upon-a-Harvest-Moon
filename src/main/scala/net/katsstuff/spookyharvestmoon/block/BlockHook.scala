@@ -133,7 +133,7 @@ class BlockHook extends BlockSpookyBase(LibBlockName.Hook, Material.IRON) {
     } else true
 
   @SideOnly(Side.CLIENT)
-  override def getBlockLayer = BlockRenderLayer.CUTOUT_MIPPED
+  override def getBlockLayer = BlockRenderLayer.SOLID
 
   override def getStateFromMeta(meta: Int): IBlockState =
     getDefaultState.withProperty(BlockHook.Facing, EnumFacing.getFront(meta))
