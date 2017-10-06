@@ -186,13 +186,13 @@ class BlockLantern extends BlockSpookyBase(LibBlockName.Lantern, Material.IRON) 
       val x       = pos.getX + 0.5D
       val y       = pos.getY + 0.3D
       val z       = pos.getZ + 0.5D
-      val vOffset = 0.22D
-      val hOffset = 0.27D
+      val vOffset = 0.1D
+      val hOffset = 0.25D
       if (facing.getAxis.isHorizontal) {
         val placedOn = facing.getOpposite
         val px       = x + hOffset * placedOn.getFrontOffsetX
         val py       = y + vOffset
-        val pz       = z + hOffset * placedOn.getFrontOffsetX
+        val pz       = z + hOffset * placedOn.getFrontOffsetZ
         ParticleUtil.spawnParticleGlow(worldIn, Vector3(px, py, pz), Vector3(0D, 0.01D, 0D), 1F, 0.8F, 0F, 1.2F, 40, GlowTexture.Mote)
       } else {
         ParticleUtil.spawnParticleGlow(worldIn, Vector3(x, y, z), Vector3(0D, 0.01D, 0D), 1F, 0.8F, 0F, 1.2F, 40, GlowTexture.Mote)

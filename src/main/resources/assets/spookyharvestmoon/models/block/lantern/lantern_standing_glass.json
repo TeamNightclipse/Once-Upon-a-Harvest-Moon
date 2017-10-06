@@ -7,6 +7,19 @@
 	"elements": [
 		{
 			"name": "cube",
+			"from": [7.5, 3, 7.5],
+			"to": [8.5, 5, 8.5],
+			"faces": {
+				"north": {"uv": [15, 0, 16, 2], "texture": "#0"},
+				"east": {"uv": [15, 0, 16, 2], "texture": "#0"},
+				"south": {"uv": [15, 0, 16, 2], "texture": "#0"},
+				"west": {"uv": [15, 0, 16, 2], "texture": "#0"},
+				"up": {"uv": [15, 0, 16, 1], "texture": "#0"},
+				"down": {"uv": [15, 1, 16, 2], "texture": "#0"}
+			}
+		},
+		{
+			"name": "cube",
 			"from": [6.5, 3, 6.5],
 			"to": [9.5, 7, 9.5],
 			"faces": {
@@ -29,7 +42,7 @@
 				"export": true,
 				"autouv": true
 			},
-			"children": [0]
+			"children": [1, 0]
 		}
 	],
 	"display": {
