@@ -6,7 +6,7 @@
 		"Cutout": "spookyharvestmoon:lantern#lantern_standing", 
 		"Translucent": "spookyharvestmoon:lantern#lantern_standing_glass"
 	},
-    "model": "forge:multi-layer"
+    "model": "forge:multi-layer",
     "uvlock": false
   },
   "variants": {
