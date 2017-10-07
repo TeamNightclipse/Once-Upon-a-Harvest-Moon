@@ -4,14 +4,17 @@ import net.katsstuff.spookyharvestmoon.SpookyHarvestMoon
 import net.katsstuff.spookyharvestmoon.client.particle.GlowTexture
 import net.katsstuff.spookyharvestmoon.data.Vector3
 import net.katsstuff.spookyharvestmoon.lib.LibEntityName
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.entity.{EntityLiving, EntityLivingBase}
 import net.minecraft.entity.projectile.EntitySmallFireball
-import net.minecraft.util.math.MathHelper
+import net.minecraft.util.math.{BlockPos, MathHelper, RayTraceResult}
 import net.minecraft.world.World
 import java.lang.{Integer => JInt}
 
+import net.katsstuff.spookyharvestmoon.helper.LogHelper
+import net.minecraft.init.Blocks
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.network.datasync.{DataParameter, DataSerializers, EntityDataManager}
+import net.minecraft.util.DamageSource
 
 object EntityWispyFireball {
   implicit val info: EntityInfo[EntityWispyFireball] = new EntityInfo[EntityWispyFireball] {
@@ -31,32 +34,28 @@ class EntityWispyFireball(_world: World) extends EntitySmallFireball(_world) {
   private def g = (color >> 8 & 255) / 255.0F
   private def b = (color & 255) / 255.0F
 
-  def this(world: World, x: Double, y: Double, z: Double, accelX: Double, accelY: Double, accelZ: Double, color: Int) {
+  def this(world: World, pos: Vector3, direction: Vector3, speed: Double, color: Int) {
     this(world)
-    setLocationAndAngles(x, y, z, this.rotationYaw, this.rotationPitch)
-    setPosition(x, y, z)
-    val accel = MathHelper.sqrt(accelX * accelX + accelY * accelY + accelZ * accelZ).toDouble
-    accelerationX = accelX / accel * 0.1D
-    accelerationY = accelY / accel * 0.1D
-    accelerationZ = accelZ / accel * 0.1D
+    setLocationAndAngles(pos.x, pos.y, pos.z, this.rotationYaw, this.rotationPitch)
+    setPosition(pos.x, pos.y, pos.z)
+    accelerationX = direction.normalize.x * speed
+    accelerationY = direction.normalize.y * speed
+    accelerationZ = direction.normalize.z * speed
     this.color = color
   }
 
-  def this(world: World, shooter: EntityLivingBase, accelX: Double, accelY: Double, accelZ: Double, color: Int) {
+  def this(world: World, shooter: EntityLivingBase, direction: Vector3, speed: Double, inaccuracy: Double, color: Int) {
     this(world)
     shootingEntity = shooter
-    setLocationAndAngles(shooter.posX, shooter.posY, shooter.posZ, shooter.rotationYaw, shooter.rotationPitch)
+    setLocationAndAngles(shooter.posX, shooter.posY + shooter.getEyeHeight, shooter.posZ, shooter.rotationYaw, shooter.rotationPitch)
     setPosition(posX, posY, posZ)
     motionX = 0.0D
     motionY = 0.0D
     motionZ = 0.0D
-    val randAccelX = accelX + rand.nextGaussian() * 0.4D
-    val randAccelY = accelY + rand.nextGaussian() * 0.4D
-    val randAccelZ = accelZ + rand.nextGaussian() * 0.4D
-    val accel      = MathHelper.sqrt(randAccelX * randAccelX + randAccelY * randAccelY + randAccelZ * randAccelZ).toDouble
-    accelerationX = randAccelX / accel * 0.1D
-    accelerationY = randAccelY / accel * 0.1D
-    accelerationZ = randAccelZ / accel * 0.1D
+    val randDir = direction.add(rand.nextGaussian() * inaccuracy, rand.nextGaussian() * inaccuracy, rand.nextGaussian() * inaccuracy)
+    accelerationX = randDir.normalize.x * speed
+    accelerationY = randDir.normalize.y * speed
+    accelerationZ = randDir.normalize.z * speed
     this.color = color
   }
 
@@ -73,8 +72,8 @@ class EntityWispyFireball(_world: World) extends EntitySmallFireball(_world) {
     if (world.isRemote) {
       val size = 0.4F
 
-      for (i <- 0 until 10) {
-        val coeff = i / 2D
+      for (i <- 0 until 5) {
+        val coeff = i / 5D
         val pos = Vector3(
           prevPosX + (posX - prevPosX) * coeff,
           0.2F + prevPosY + (posY - prevPosY) * coeff,
@@ -83,6 +82,20 @@ class EntityWispyFireball(_world: World) extends EntitySmallFireball(_world) {
         val motion =
           Vector3(0.0125f * (rand.nextFloat - 0.5F), 0.075F * rand.nextFloat, 0.01F * (rand.nextFloat - 0.5F))
         SpookyHarvestMoon.proxy.spawnParticleGlow(world, pos, motion, r, g, b, size * 5F, 40, GlowTexture.Mote)
+      }
+    }
+  }
+
+  override def onImpact(result: RayTraceResult): Unit = {
+    if (!world.isRemote) {
+      if (result.entityHit != null) {
+        if (!result.entityHit.isImmuneToFire) {
+          val success = result.entityHit.attackEntityFrom(DamageSource.causeFireballDamage(this, shootingEntity), 5F)
+          if (success) {
+            applyEnchantments(shootingEntity, result.entityHit)
+            result.entityHit.setFire(5)
+          }
+        }
       }
     }
   }

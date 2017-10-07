@@ -40,7 +40,7 @@ class ParticleRenderer {
 
   private def updateParticles(): Unit = {
     val toRemove = for (particle <- particles) yield {
-      if (particle.alive) {
+      if (particle != null && particle.alive) {
         particle.onUpdateGlow()
         None
       } else Some(particle)
@@ -76,21 +76,21 @@ class ParticleRenderer {
 
       GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA)
       buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP)
-      for (particle <- particles if !particle.isAdditive) {
+      for (particle <- particles if particle != null && !particle.isAdditive) {
         particle.renderParticleGlow(buffer, player, partialTicks, f, f4, f1, f2, f3)
       }
       tess.draw()
 
       GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE)
       buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP)
-      for (particle <- particles if particle.isAdditive) {
+      for (particle <- particles if particle != null && particle.isAdditive) {
         particle.renderParticleGlow(buffer, player, partialTicks, f, f4, f1, f2, f3)
       }
       tess.draw()
 
       GlStateManager.disableDepth()
       buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP)
-      for (particle <- particles if particle.ignoreDepth) {
+      for (particle <- particles if particle != null && particle.ignoreDepth) {
         particle.renderParticleGlow(buffer, player, partialTicks, f, f4, f1, f2, f3)
       }
       tess.draw()

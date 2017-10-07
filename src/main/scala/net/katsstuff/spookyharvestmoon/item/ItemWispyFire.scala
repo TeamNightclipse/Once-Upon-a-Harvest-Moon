@@ -3,6 +3,8 @@ package net.katsstuff.spookyharvestmoon.item
 import scala.util.Random
 
 import net.katsstuff.spookyharvestmoon.LibItemName
+import net.katsstuff.spookyharvestmoon.data.Vector3
+import net.katsstuff.spookyharvestmoon.entity.EntityWispyFireball
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.projectile.EntitySnowball
 import net.minecraft.init.SoundEvents
@@ -29,8 +31,7 @@ class ItemWispyFire extends ItemSpookyBase(LibItemName.WispyFire) {
     )
 
     if (!worldIn.isRemote) {
-      val snowball = new EntitySnowball(worldIn, player)
-      snowball.shoot(player, player.rotationPitch, player.rotationYaw, 0.0F, 1.5F, 1.0F)
+      val snowball = new EntityWispyFireball(worldIn, player, new Vector3(player.getLookVec), 0.1D, 0.025D, 0xFFFFFF)
       worldIn.spawnEntity(snowball)
     }
 

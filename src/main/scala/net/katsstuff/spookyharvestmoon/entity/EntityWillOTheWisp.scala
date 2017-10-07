@@ -154,6 +154,8 @@ class EntityWillOTheWisp(_world: World) extends EntityFlyingMob(_world) {
 
   override def onUpdate(): Unit = {
     super.onUpdate()
+    LogHelper.info(form)
+
     if (world.isRemote) {
       val color = EntityWillOTheWisp.formToColor(form)
       val r     = (color >> 16 & 255) / 255.0F
@@ -175,18 +177,7 @@ class EntityWillOTheWisp(_world: World) extends EntityFlyingMob(_world) {
     } else {
       if (world.isDaytime && isEntityAlive) {
         setDead()
-
-        val basePos = pos
-        val color   = EntityWillOTheWisp.formToColor(form)
-        val r       = (color >> 16 & 255) / 255.0F
-        val g       = (color >> 8 & 255) / 255.0F
-        val b       = (color & 255) / 255.0F
-        val size    = 0.4F
-        for (i <- 0 until 32) {
-          val motion = Vector3.randomDirection
-          val pos    = basePos.offset(motion, Math.random())
-          ParticleUtil.spawnParticleGlowPacket(world, pos, motion / 10D, r, g, b, size * 10F, 40, GlowTexture.Mote, 32)
-        }
+        ParticleUtil.spawnPoffPacket(world, pos, EntityWillOTheWisp.formToColor(form))
       }
     }
   }

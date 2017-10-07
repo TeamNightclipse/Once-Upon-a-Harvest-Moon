@@ -3,7 +3,8 @@ package net.katsstuff.spookyharvestmoon
 import net.katsstuff.spookyharvestmoon.client.ClientProxy
 import net.katsstuff.spookyharvestmoon.helper.LogHelper
 import net.katsstuff.spookyharvestmoon.lib.LibMod
-import net.katsstuff.spookyharvestmoon.network.SpookyPacketHandler
+import net.katsstuff.spookyharvestmoon.network.{SeqVector3Serializer, SpookyPacketHandler, Vector3Serializer}
+import net.minecraft.network.datasync.DataSerializers
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.{FMLCommonHandler, Mod, SidedProxy}
 import net.minecraftforge.fml.common.event.{FMLInitializationEvent, FMLPostInitializationEvent, FMLPreInitializationEvent}
@@ -27,6 +28,8 @@ object SpookyHarvestMoon {
   def preinit(event: FMLPreInitializationEvent): Unit = {
     LogHelper.assignLog(event.getModLog)
     SpookyPacketHandler.load()
+    DataSerializers.registerSerializer(Vector3Serializer)
+    DataSerializers.registerSerializer(SeqVector3Serializer)
     proxy.registerRenderers()
   }
 

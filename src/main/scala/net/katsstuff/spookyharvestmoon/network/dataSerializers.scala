@@ -1,7 +1,6 @@
 package net.katsstuff.spookyharvestmoon.network
 
-import java.util.UUID
-
+import net.katsstuff.spookyharvestmoon.data.Vector3
 import net.minecraft.network.PacketBuffer
 import net.minecraft.network.datasync.{DataParameter, DataSerializer}
 
@@ -22,12 +21,29 @@ class OptionSerializers[A](serializer: DataSerializer[A]) extends DataSerializer
   override def copyValue(value: Option[A]): Option[A] = value.map(serializer.copyValue)
 }
 
-object UUIDSerializer extends DataSerializer[UUID] {
+class SeqSerializer[A](serializer: DataSerializer[A]) extends DataSerializer[Seq[A]] {
+  override def write(buf: PacketBuffer, value: Seq[A]): Unit = {
+    buf.writeInt(value.size)
+    value.foreach(serializer.write(buf, _))
+  }
 
-  override def createKey(id: Int):                    DataParameter[UUID] = new DataParameter(id, this)
-  override def write(buf: PacketBuffer, value: UUID): Unit                = buf.writeUniqueId(value)
-  override def read(buf: PacketBuffer):               UUID                = buf.readUniqueId()
-  override def copyValue(value: UUID): UUID = value
+  override def read(buf: PacketBuffer): Seq[A] = {
+    val size = buf.readInt()
+    for(_ <- 0 until size) yield serializer.read(buf)
+  }
+
+  override def createKey(id: Int): DataParameter[Seq[A]] = new DataParameter(id, this)
+  override def copyValue(value: Seq[A]): Seq[A] = value.map(serializer.copyValue)
 }
 
-object OptionUUIDSerializer extends OptionSerializers(UUIDSerializer)
+object SeqVector3Serializer extends SeqSerializer(Vector3Serializer)
+object Vector3Serializer extends DataSerializer[Vector3] {
+  override def write(buf: PacketBuffer, value: Vector3): Unit = {
+    buf.writeDouble(value.x)
+    buf.writeDouble(value.y)
+    buf.writeDouble(value.z)
+  }
+  override def read(buf: PacketBuffer): Vector3 = Vector3(buf.readDouble(), buf.readDouble(), buf.readDouble())
+  override def createKey(id: Int): DataParameter[Vector3] = new DataParameter(id, this)
+  override def copyValue(value: Vector3): Vector3 = value
+}

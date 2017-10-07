@@ -606,7 +606,7 @@ object Vector3 {
 
   private def directionToPosNotNormalized(posA: AbstractVector3, posB: AbstractVector3): posB.Self = posB - posA
 
-  def directionToPos(posA: AbstractVector3, posB: AbstractVector3): AbstractVector3 =
+  def directionToPos(posA: AbstractVector3, posB: AbstractVector3): posB.Self#Self =
     directionToPosNotNormalized(posA, posB).normalize
 
   def directionToEntity(from: AbstractVector3, to: Entity): Vector3 =
