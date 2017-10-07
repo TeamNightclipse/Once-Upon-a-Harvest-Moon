@@ -3,7 +3,7 @@ package net.katsstuff.spookyharvestmoon
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
-import net.katsstuff.spookyharvestmoon.block.{BlockHook, BlockLantern}
+import net.katsstuff.spookyharvestmoon.block.{BlockHook, BlockJackOLantern, BlockLantern, BlockTotem}
 import net.katsstuff.spookyharvestmoon.client.particle.{GlowTexture, IGlowParticle}
 import net.katsstuff.spookyharvestmoon.data.Vector3
 import net.katsstuff.spookyharvestmoon.effect.PotionDrowning
@@ -26,7 +26,7 @@ object CommonProxy {
     event.getRegistry.registerAll(
       new BlockLantern().setRegistryName(LibBlockName.Lantern),
       new BlockHook().setRegistryName(LibBlockName.Hook),
-      new BlockHook().setRegistryName(LibBlockName.JackOLantern)
+      new BlockTotem().setRegistryName(LibBlockName.Totem)
     )
 
   @SubscribeEvent
@@ -36,7 +36,8 @@ object CommonProxy {
       new ItemBlock(SpookyBlocks.Hook).setRegistryName(LibBlockName.Hook),
       new ItemBlock(SpookyBlocks.JackOLantern).setRegistryName(LibBlockName.JackOLantern),
       new ItemNote().setRegistryName(LibItemName.Note),
-      new ItemWispyFire().setRegistryName(LibItemName.WispyFire)
+      new ItemWispyFire().setRegistryName(LibItemName.WispyFire),
+      new ItemBlock(SpookyBlocks.Totem).setRegistryName(LibBlockName.Totem)
     )
 
   @SubscribeEvent

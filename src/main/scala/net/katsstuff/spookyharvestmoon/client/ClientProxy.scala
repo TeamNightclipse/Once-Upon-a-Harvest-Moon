@@ -5,7 +5,13 @@ import scala.reflect.ClassTag
 import net.katsstuff.spookyharvestmoon.CommonProxy
 import net.katsstuff.spookyharvestmoon.client.helper.RenderHelper
 import net.katsstuff.spookyharvestmoon.client.particle.{GlowTexture, IGlowParticle, ParticleRenderer, ParticleUtil}
-import net.katsstuff.spookyharvestmoon.client.render.{RenderJackOLantern, RenderLanternMan, RenderMermaid, RenderWillOTheWisp, RenderWitch}
+import net.katsstuff.spookyharvestmoon.client.render.{
+  RenderJackOLantern,
+  RenderLanternMan,
+  RenderMermaid,
+  RenderWillOTheWisp,
+  RenderWitch
+}
 import net.katsstuff.spookyharvestmoon.data.Vector3
 import net.katsstuff.spookyharvestmoon.item.ItemNote
 import net.minecraft.block.Block
@@ -33,10 +39,16 @@ object ClientProxy {
     registerItemBlock(JackOLantern)
     ItemNote.Ids.foreach(i => registerItem(Note, i, i => new ResourceLocation(i.getRegistryName + s"_$i")))
     registerItem(WispyFire)
+    registerItemBlock(Totem)
+    registerItemBlock(Totem, 1, i => new ResourceLocation(i.getRegistryName.toString + "_broken"))
   }
 
-  private def registerItemBlock(block: Block, damage: Int = 0): Unit =
-    registerItem(Item.getItemFromBlock(block), damage)
+  private def registerItemBlock(
+      block: Block,
+      damage: Int = 0,
+      mrlFun: Item => ResourceLocation = _.getRegistryName
+  ): Unit =
+    registerItem(Item.getItemFromBlock(block), damage, mrlFun)
 
   def registerItem(item: Item, damage: Int = 0, mrlFun: Item => ResourceLocation = _.getRegistryName): Unit =
     ModelLoader.setCustomModelResourceLocation(item, damage, new MRL(mrlFun(item), "inventory"))
