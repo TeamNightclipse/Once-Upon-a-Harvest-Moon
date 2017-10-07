@@ -9,7 +9,7 @@ import net.katsstuff.spookyharvestmoon.data.Vector3
 import net.katsstuff.spookyharvestmoon.effect.PotionDrowning
 import net.katsstuff.spookyharvestmoon.entity._
 import net.katsstuff.spookyharvestmoon.helper.IdState
-import net.katsstuff.spookyharvestmoon.item.{ItemNote, ItemWispyFire}
+import net.katsstuff.spookyharvestmoon.item.{ItemBlockTotem, ItemNote, ItemWispyFire}
 import net.minecraft.block.Block
 import net.minecraft.entity.Entity
 import net.minecraft.item.{Item, ItemBlock}
@@ -37,7 +37,7 @@ object CommonProxy {
       new ItemBlock(SpookyBlocks.JackOLantern).setRegistryName(LibBlockName.JackOLantern),
       new ItemNote().setRegistryName(LibItemName.Note),
       new ItemWispyFire().setRegistryName(LibItemName.WispyFire),
-      new ItemBlock(SpookyBlocks.Totem).setRegistryName(LibBlockName.Totem)
+      new ItemBlockTotem(SpookyBlocks.Totem).setRegistryName(LibBlockName.Totem)
     )
 
   @SubscribeEvent
@@ -103,5 +103,7 @@ class CommonProxy {
   ): Unit = {}
 
   def addParticle(particle: IGlowParticle): Unit = {}
+
+  def isInRenderRange(entity: Entity): Boolean = false
 
 }

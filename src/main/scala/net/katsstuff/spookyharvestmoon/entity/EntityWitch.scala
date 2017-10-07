@@ -17,10 +17,11 @@ import net.minecraft.block.BlockDirectional
 import net.minecraft.block.state.BlockWorldState
 import net.minecraft.block.state.pattern.{BlockPattern, FactoryBlockPattern}
 import net.minecraft.entity.ai._
-import net.minecraft.entity.monster.{EntitySkeleton, EntitySpider, EntityStray, EntityZombie, EntityZombieVillager}
+import net.minecraft.entity.item.EntityItem
+import net.minecraft.entity.monster.{EntityEvoker, EntityIllusionIllager, EntityMob, EntitySkeleton, EntitySpider, EntityStray, EntityVindicator, EntityZombie, EntityZombieVillager}
 import net.minecraft.entity.player.{EntityPlayer, EntityPlayerMP}
 import net.minecraft.entity.{Entity, EntityLivingBase, IRangedAttackMob, SharedMonsterAttributes}
-import net.minecraft.init.{Blocks, Items, SoundEvents}
+import net.minecraft.init.{Blocks, Items, MobEffects, SoundEvents}
 import net.minecraft.nbt.{NBTTagCompound, NBTTagDouble, NBTTagList}
 import net.minecraft.network.datasync.{DataSerializers, EntityDataManager}
 import net.minecraft.pathfinding.PathNavigateGround
@@ -41,41 +42,41 @@ object EntityWitch {
   private val Center     = EntityDataManager.createKey(classOf[EntityWitch], Vector3Serializer)
 
   sealed trait State {
-    def timeTilNextState: Int
+    def timeTilNextState(level: Int): Int
   }
   object State {
     case object NOOP extends State {
-      override def timeTilNextState: Int = 30
+      override def timeTilNextState(level: Int): Int = 30 / level
     }
     case object Explosion extends State {
-      override def timeTilNextState: Int = 60
+      override def timeTilNextState(level: Int): Int = 60 / ((level / 2) + 1)
     }
     case object FirstExplosion extends State {
-      override def timeTilNextState: Int = 100
+      override def timeTilNextState(level: Int): Int = 100
     }
     case object ShootProjectiles extends State {
-      override def timeTilNextState: Int = 60
+      override def timeTilNextState(level: Int): Int = 60 + (5 * level)
     }
     case object TeleportCenter extends State {
-      override def timeTilNextState: Int = 10
+      override def timeTilNextState(level: Int): Int = 10 / level
     }
     case object SummonMobs extends State {
-      override def timeTilNextState: Int = 40
+      override def timeTilNextState(level: Int): Int = 40
     }
     case object Teleport extends State {
-      override def timeTilNextState: Int = 10
+      override def timeTilNextState(level: Int): Int = 10 / level
     }
     case object FireCircle extends State {
-      override def timeTilNextState: Int = 180
+      override def timeTilNextState(level: Int): Int = 180 + (15 * level)
     }
     case object FireSpray extends State {
-      override def timeTilNextState: Int = 60
+      override def timeTilNextState(level: Int): Int = 60 + (10 * level)
     }
     case object ShootProjectilesOutsideArena extends State {
-      override def timeTilNextState: Int = ShootProjectiles.timeTilNextState
+      override def timeTilNextState(level: Int): Int = ShootProjectiles.timeTilNextState(level)
     }
     case object SummonMobsOutsideArena extends State {
-      override def timeTilNextState: Int = SummonMobs.timeTilNextState
+      override def timeTilNextState(level: Int): Int = SummonMobs.timeTilNextState(level)
     }
 
     def fromId(id: Byte): Option[State] = id match {
@@ -242,13 +243,15 @@ object EntityWitch {
     else if (area2 > 0) +1
     else 0
   }
+
+  final val HealthNotch = 0.166666666
 }
-class EntityWitch(_world: World, _center: Vector3, _pillars: Seq[Vector3])
+class EntityWitch(_world: World, _center: Vector3, _pillars: Seq[Vector3], _damaged: Boolean)
     extends EntitySpookyBaseMob(_world)
     with IRangedAttackMob {
   import EntityWitch._
 
-  def this(world: World) = this(world, null, null)
+  def this(world: World) = this(world, null, null, false)
 
   if (_pillars != null) {
     pillars = _pillars
@@ -257,10 +260,13 @@ class EntityWitch(_world: World, _center: Vector3, _pillars: Seq[Vector3])
     setPositionAndUpdate(_center.x, _center.y, _center.z)
     center = _center
   }
+  if(_damaged) {
+    setHealth((getMaxHealth - getMaxHealth * EntityWitch.HealthNotch).toFloat)
+  }
 
   setNoGravity(true)
   state = State.FirstExplosion
-  private var timeTilStateShift = state.timeTilNextState
+  private var timeTilStateShift = state.timeTilNextState(level)
   private var timeSinceLastSawPlayer = 0
   private val fightingPlayer    = mutable.Set[EntityPlayer]()
 
@@ -276,7 +282,7 @@ class EntityWitch(_world: World, _center: Vector3, _pillars: Seq[Vector3])
   override protected def initEntityAI(): Unit = {
     this.tasks.addTask(0, new EntityAISwimming(this))
     this.tasks.addTask(1, new EntityAIWatchClosest(this, classOf[EntityPlayer], 24F))
-    this.tasks.addTask(4, new EntityAILookIdle(this))
+    this.tasks.addTask(5, new EntityAILookIdle(this))
     this.targetTasks.addTask(1, new EntityAINearestAttackableTarget(this, classOf[EntityPlayer], false, false))
     this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, false))
   }
@@ -303,7 +309,7 @@ class EntityWitch(_world: World, _center: Vector3, _pillars: Seq[Vector3])
 
   override protected def applyEntityAttributes(): Unit = {
     super.applyEntityAttributes()
-    getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(400D)
+    getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(600D)
     getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.3D)
     getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(40D)
     getEntityAttribute(SharedMonsterAttributes.ARMOR).setBaseValue(2D)
@@ -328,7 +334,7 @@ class EntityWitch(_world: World, _center: Vector3, _pillars: Seq[Vector3])
       setDead()
     }
 
-    val players = playersInArena
+    val players = entitiesInArena(classOf[EntityPlayer])
     fightingPlayer ++= players
     if (players.isEmpty && !world.playerEntities.isEmpty) {
       timeSinceLastSawPlayer += 1
@@ -342,12 +348,17 @@ class EntityWitch(_world: World, _center: Vector3, _pillars: Seq[Vector3])
       for (player <- players) {
         player.capabilities.isFlying = player.capabilities.isFlying && player.capabilities.isCreativeMode
       }
+
+      if(!world.isRemote) {
+        entitiesInArena(classOf[EntityMob]).filter(e => this == e.getAttackTarget).foreach { e =>
+          e.setAttackTarget(players(Random.nextInt(players.length)))
+        }
+      }
     }
 
     if (isDead) return
     createParticleWall()
 
-    //val dying = getHealth / getMaxHealth < 0.166666666 //We use 6 notches for boss bar, this is the last notch
     if (timeTilStateShift == 0) {
       if(!world.isRemote) {
         doStateShift()
@@ -390,6 +401,20 @@ class EntityWitch(_world: World, _center: Vector3, _pillars: Seq[Vector3])
             attackEntityWithRangedAttack(getAttackTarget, 1F)
           }
         case State.Explosion =>
+          val totems = entitiesInArena(classOf[EntityItem]).filter(_.getItem.getItem == Items.TOTEM_OF_UNDYING)
+          totems.foreach { item =>
+            if(item.getDistanceSq(this) < 8 * 8) {
+              item.setDead()
+              heal(5F)
+            }
+            else {
+              val dir = Vector3.directionToEntity(item, this)
+              item.motionX = dir.x
+              item.motionY = dir.y
+              item.motionZ = dir.z
+            }
+          }
+
           if (timeTilStateShift == 0) {
             if (!world.isRemote) {
               world.createExplosion(this, posX, posY, posZ, 5F, false)
@@ -398,29 +423,43 @@ class EntityWitch(_world: World, _center: Vector3, _pillars: Seq[Vector3])
 
         case State.FireCircle =>
           if (!world.isRemote) {
-            val direction = Vector3.Forward.rotate(ticksExisted % 6, Vector3.Left).rotate(ticksExisted * 6, Vector3.Up)
-            val fire      = new EntityWispyFireball(world, this, direction, 0.1D, 0.2D, 0xFFFFFF)
+            val lvl = level
+            val direction = Vector3.Forward.rotate(ticksExisted % 6, Vector3.Left).rotate(ticksExisted * 2 * lvl, Vector3.Up)
+            val fire      = new EntityWispyFireball(world, this, direction, 0.05D * lvl, 0.2D, 0xFFFFFF)
             world.spawnEntity(fire)
           }
         case State.FireSpray =>
           if (!world.isRemote) {
             for (player <- players) {
-              val direction = Vector3.limitRandomDirection(Vector3.directionToEntity(this, player), 10F)
-              val fire      = new EntityWispyFireball(world, this, direction, 0.05D, 0.4D, 0xFFFFFF)
+              val lvl = level
+              val direction = Vector3.limitRandomDirection(Vector3.directionToEntity(this, player), 10F / lvl)
+              val fire      = new EntityWispyFireball(world, this, direction, 0.025D * lvl, 0.6D / lvl, 0xFFFFFF)
               world.spawnEntity(fire)
             }
           }
         case State.SummonMobs | State.SummonMobsOutsideArena =>
-          if (timeTilStateShift % 20 == 0) {
+          val lvl = level
+          if (timeTilStateShift % (40 / lvl) == 0) {
             for (_ <- 0 until Random.nextInt(5)) {
               if (!world.isRemote) {
                 val pos = center.offset(Vector3.getVecWithoutY(Vector3.randomDirection), Math.random() * 10)
-                val entity = Random.nextInt(5) match {
-                  case 0 => new EntityZombie(world)
-                  case 1 => new EntityZombieVillager(world)
-                  case 2 => new EntitySkeleton(world)
-                  case 3 => new EntityStray(world)
-                  case 4 => new EntitySpider(world)
+                val useHardMobs = players.exists(_.getActivePotionEffect(MobEffects.FIRE_RESISTANCE) != null)
+                val entity = if(useHardMobs) {
+                  Random.nextInt(4) match {
+                    case 0 => new EntityStray(world)
+                    case 1 => new EntityEvoker(world)
+                    case 2 => new EntityIllusionIllager(world)
+                    case 3 => new EntityVindicator(world)
+                  }
+                }
+                else {
+                  Random.nextInt(5) match {
+                    case 0 => new EntityZombie(world)
+                    case 1 => new EntityZombieVillager(world)
+                    case 2 => new EntitySkeleton(world)
+                    case 3 => new EntityStray(world)
+                    case 4 => new EntitySpider(world)
+                  }
                 }
                 entity.setPositionAndUpdate(pos.x, pos.y, pos.z)
                 world.spawnEntity(entity)
@@ -433,6 +472,13 @@ class EntityWitch(_world: World, _center: Vector3, _pillars: Seq[Vector3])
     }
   }
 
+  def level: Int = {
+    //We use 6 notches for boss bar, 0.166666666 is one notch
+    val res = Math.abs(((getHealth / getMaxHealth) / HealthNotch) - 6).toInt + 1
+    if(res == 6) res + 3
+    else res
+  }
+
   def doStateShift(): Unit = {
     val allowed = allowedStates.toSeq
     val nextState = allowed(Random.nextInt(allowed.size))
@@ -442,7 +488,7 @@ class EntityWitch(_world: World, _center: Vector3, _pillars: Seq[Vector3])
 
   def doInitialEffect(): Unit = {
     val newState= state
-    timeTilStateShift = newState.timeTilNextState
+    timeTilStateShift = newState.timeTilNextState(level)
     newState match {
       case State.TeleportCenter | State.FireSpray | State.FireCircle =>
         if (!teleportTo(center.x, center.y, center.z)) {
@@ -539,15 +585,15 @@ class EntityWitch(_world: World, _center: Vector3, _pillars: Seq[Vector3])
 
   override def canBePushed: Boolean = false
 
-  private def playersInArena: Seq[EntityPlayer] = {
+  private def entitiesInArena[A <: Entity](clazz: Class[A]): Seq[A] = {
     val source = center
     val range  = 40F
 
     val from = source - range
     val to   = source + range
-    val pred: Predicate[EntityPlayer] = isInsideArena(_)
+    val pred: Predicate[A] = isInsideArena(_)
     world
-      .getEntitiesWithinAABB(classOf[EntityPlayer], new AxisAlignedBB(from.x, from.y, from.z, to.x, to.y, to.z), pred)
+      .getEntitiesWithinAABB(clazz, new AxisAlignedBB(from.x, from.y, from.z, to.x, to.y, to.z), pred)
       .asScala
   }
 

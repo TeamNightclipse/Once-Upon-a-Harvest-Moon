@@ -1,20 +1,18 @@
 package net.katsstuff.spookyharvestmoon.entity
 
+import java.lang.{Integer => JInt}
+
 import net.katsstuff.spookyharvestmoon.SpookyHarvestMoon
 import net.katsstuff.spookyharvestmoon.client.particle.GlowTexture
 import net.katsstuff.spookyharvestmoon.data.Vector3
 import net.katsstuff.spookyharvestmoon.lib.LibEntityName
-import net.minecraft.entity.{EntityLiving, EntityLivingBase}
+import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.projectile.EntitySmallFireball
-import net.minecraft.util.math.{BlockPos, MathHelper, RayTraceResult}
-import net.minecraft.world.World
-import java.lang.{Integer => JInt}
-
-import net.katsstuff.spookyharvestmoon.helper.LogHelper
-import net.minecraft.init.Blocks
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.network.datasync.{DataParameter, DataSerializers, EntityDataManager}
 import net.minecraft.util.DamageSource
+import net.minecraft.util.math.RayTraceResult
+import net.minecraft.world.World
 
 object EntityWispyFireball {
   implicit val info: EntityInfo[EntityWispyFireball] = new EntityInfo[EntityWispyFireball] {
@@ -69,11 +67,11 @@ class EntityWispyFireball(_world: World) extends EntitySmallFireball(_world) {
 
   override def onUpdate(): Unit = {
     super.onUpdate()
-    if (world.isRemote) {
+    if (world.isRemote && SpookyHarvestMoon.proxy.isInRenderRange(this)) {
       val size = 0.4F
 
-      for (i <- 0 until 5) {
-        val coeff = i / 5D
+      for (i <- 0 until 3) {
+        val coeff = i / 3D
         val pos = Vector3(
           prevPosX + (posX - prevPosX) * coeff,
           0.2F + prevPosY + (posY - prevPosY) * coeff,

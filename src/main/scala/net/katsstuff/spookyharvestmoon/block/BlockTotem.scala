@@ -1,24 +1,31 @@
 package net.katsstuff.spookyharvestmoon.block
 
+import java.util
+
 import javax.annotation.Nullable
 
 import net.katsstuff.spookyharvestmoon.data.Vector3
 import net.katsstuff.spookyharvestmoon.entity.EntityWitch
+import net.katsstuff.spookyharvestmoon.helper.ItemNBTHelper
 import net.katsstuff.spookyharvestmoon.{LibBlockName, SpookyItems}
 import net.minecraft.block.SoundType
 import net.minecraft.block.material.Material
 import net.minecraft.block.properties.{PropertyBool, PropertyDirection}
 import net.minecraft.block.state.{BlockFaceShape, BlockStateContainer, IBlockState}
+import net.minecraft.client.util.ITooltipFlag
+import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.item.ItemStack
 import net.minecraft.util.math.{AxisAlignedBB, BlockPos}
 import net.minecraft.util.text.{TextComponentString, TextComponentTranslation}
-import net.minecraft.util.{EnumFacing, EnumHand, Mirror, Rotation}
+import net.minecraft.util.{EnumFacing, EnumHand, Mirror, NonNullList, Rotation}
 import net.minecraft.world.{IBlockAccess, World}
+import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 
 object BlockTotem {
-  val BrokenAABB = new AxisAlignedBB(0.0625D * 4, 0.0625D * 0, 0.0625D * 4, 0.0625D * 12, 0.0625D * 10, 0.0625D * 12)
-  val NormalAABB = new AxisAlignedBB(0.0625D * 4, 0.0625D * 0, 0.0625D * 4, 0.0625D * 12, 0.0625D * 14, 0.0625D * 12)
+  val BrokenAABB         = new AxisAlignedBB(0.0625D * 4, 0.0625D * 0, 0.0625D * 4, 0.0625D * 12, 0.0625D * 10, 0.0625D * 12)
+  val NormalAABB         = new AxisAlignedBB(0.0625D * 4, 0.0625D * 0, 0.0625D * 4, 0.0625D * 12, 0.0625D * 14, 0.0625D * 12)
   protected val TODOAABB = new AxisAlignedBB(0.4D, 0.0D, 0.4D, 0.6D, 0.6D, 0.6D)
   val Facing: PropertyDirection = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL)
   val Broken: PropertyBool      = PropertyBool.create("broken")
@@ -33,20 +40,41 @@ class BlockTotem extends BlockSpookyBase(LibBlockName.Totem, Material.WOOD) {
   setSoundType(SoundType.WOOD)
   setHardness(1F)
 
-  override def getBoundingBox(state: IBlockState, source: IBlockAccess, pos: BlockPos): AxisAlignedBB = {
-    if(state.getValue(BlockTotem.Broken)) BlockTotem.BrokenAABB
+  override def getBoundingBox(state: IBlockState, source: IBlockAccess, pos: BlockPos): AxisAlignedBB =
+    if (state.getValue(BlockTotem.Broken)) BlockTotem.BrokenAABB
     else BlockTotem.NormalAABB
-  }
 
   @Nullable
-  override def getCollisionBoundingBox(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): AxisAlignedBB = {
-    if(state.getValue(BlockTotem.Broken)) BlockTotem.BrokenAABB
+  override def getCollisionBoundingBox(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): AxisAlignedBB =
+    if (state.getValue(BlockTotem.Broken)) BlockTotem.BrokenAABB
     else BlockTotem.NormalAABB
-  }
 
   override def isOpaqueCube(state: IBlockState): Boolean = false
 
   override def isFullCube(state: IBlockState): Boolean = false
+
+  override def onBlockPlacedBy(
+      world: World,
+      pos: BlockPos,
+      state: IBlockState,
+      placer: EntityLivingBase,
+      stack: ItemStack
+  ): Unit = {
+    super.onBlockPlacedBy(world, pos, state, placer, stack)
+
+    if (ItemNBTHelper.getBoolean(stack, "Broken")) {
+      world.setBlockState(pos, state.withProperty(BlockTotem.Broken, Boolean.box(true)))
+    }
+  }
+
+  override def getSubBlocks(itemIn: CreativeTabs, items: NonNullList[ItemStack]): Unit = {
+    val stack = new ItemStack(this)
+    items.add(stack)
+
+    val brokenStack = stack.copy()
+    ItemNBTHelper.setBoolean(brokenStack, "Broken", b = true)
+    items.add(brokenStack)
+  }
 
   override def onBlockActivated(
       world: World,
@@ -64,7 +92,12 @@ class BlockTotem extends BlockSpookyBase(LibBlockName.Totem, Material.WOOD) {
       if (!world.isRemote) {
         EntityWitch.validArena(world, pos) match {
           case Right(pillars) =>
-            val witch = new EntityWitch(world, new Vector3(pos.getX + 0.5D, pos.getY + 3.5D, pos.getZ + 0.5D), pillars)
+            val witch = new EntityWitch(
+              world,
+              new Vector3(pos.getX + 0.5D, pos.getY + 3.5D, pos.getZ + 0.5D),
+              pillars,
+              state.getValue(BlockTotem.Broken)
+            )
             world.spawnEntity(witch)
             true
           case Left((e, poses)) =>
@@ -77,12 +110,7 @@ class BlockTotem extends BlockSpookyBase(LibBlockName.Totem, Material.WOOD) {
             false
         }
       } else true
-    } else {
-      //TODO: Remove this
-      world.setBlockState(pos, state.withProperty(BlockTotem.Broken, Boolean.box(!state.getValue(BlockTotem.Broken))))
-      true
-      //false
-    }
+    } else false
   }
 
   override def canPlaceBlockAt(worldIn: World, pos: BlockPos): Boolean =

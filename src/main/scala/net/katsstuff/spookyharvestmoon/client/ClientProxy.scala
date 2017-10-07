@@ -5,16 +5,11 @@ import scala.reflect.ClassTag
 import net.katsstuff.spookyharvestmoon.CommonProxy
 import net.katsstuff.spookyharvestmoon.client.helper.RenderHelper
 import net.katsstuff.spookyharvestmoon.client.particle.{GlowTexture, IGlowParticle, ParticleRenderer, ParticleUtil}
-import net.katsstuff.spookyharvestmoon.client.render.{
-  RenderJackOLantern,
-  RenderLanternMan,
-  RenderMermaid,
-  RenderWillOTheWisp,
-  RenderWitch
-}
+import net.katsstuff.spookyharvestmoon.client.render.{RenderJackOLantern, RenderLanternMan, RenderMermaid, RenderWillOTheWisp, RenderWitch}
 import net.katsstuff.spookyharvestmoon.data.Vector3
 import net.katsstuff.spookyharvestmoon.item.ItemNote
 import net.minecraft.block.Block
+import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.block.model.{ModelResourceLocation => MRL}
 import net.minecraft.client.renderer.entity.{Render, RenderManager}
 import net.minecraft.entity.Entity
@@ -40,7 +35,6 @@ object ClientProxy {
     ItemNote.Ids.foreach(i => registerItem(Note, i, i => new ResourceLocation(i.getRegistryName + s"_$i")))
     registerItem(WispyFire)
     registerItemBlock(Totem)
-    registerItemBlock(Totem, 1, i => new ResourceLocation(i.getRegistryName.toString + "_broken"))
   }
 
   private def registerItemBlock(
@@ -92,4 +86,9 @@ class ClientProxy extends CommonProxy {
 
   override def addParticle(particle: IGlowParticle): Unit =
     particleRenderer.addParticle(particle)
+
+  override def isInRenderRange(entity: Entity): Boolean = {
+    val range = Minecraft.getMinecraft.player.getDistanceSq(entity)
+    entity.isInRangeToRenderDist(range)
+  }
 }
