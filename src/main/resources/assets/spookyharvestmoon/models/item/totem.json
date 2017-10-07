@@ -1,0 +1,11 @@
+{
+  "parent": "spookyharvestmoon:block/totem/totem_block",
+  "overrides": [
+    {
+      "predicate": {
+        "broken": 1
+      },
+      "model": "spookyharvestmoon:block/totem/totem_block_broken"
+    }
+  ]
+}
